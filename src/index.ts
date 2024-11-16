@@ -6,5 +6,5 @@ const MediaPlayer = registerPlugin<MediaPlayerPlugin>('MediaPlayer', {
   web: () => import('./web').then((m) => new m.MediaPlayerWeb()),
 });
 
-export * from './definitions';
+export { MediaPlayerOptions } from './definitions';
 export { MediaPlayer };
