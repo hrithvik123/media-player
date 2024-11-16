@@ -1,7 +1,7 @@
 {
   "name": "@eduardoroth/media-player",
-  "version": "0.0.1",
-  "description": "Native Media Player with support for responsive designa and embedded mode",
+  "version": "1.0.0",
+  "description": "Updated Media Player for iOS, Android and Web",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -62,7 +62,9 @@
     "typescript": "~4.1.5"
   },
   "peerDependencies": {
-    "@capacitor/core": "^6.0.0"
+    "@capacitor/core": "^6.0.0",
+    "hls.js": "^1.5.17",
+    "dashjs": "^4.7.4"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
@@ -76,5 +78,8 @@
     "android": {
       "src": "android"
     }
+  },
+  "dependencies": {
+    "vidstack": "^1.12.12"
   }
 }
