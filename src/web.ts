@@ -54,8 +54,7 @@ export class MediaPlayerWeb extends WebPlugin implements MediaPlayerPlugin {
         result: true,
         value: playerId,
       };
-    } catch (err) {
-      console.log(err);
+    } catch (err: any) {
       return {
         method: 'create',
         result: false,
