@@ -12,10 +12,7 @@ extension MediaPlayerView {
             if self.ios?.enableBackgroundPlay == true {
                 self.isInBackgroundMode = true
                 if self.isInPipMode != true {
-                    self.videoTrackEnable(playerItem: self.playerItem, enable: false)
-                    if self.videoPlayer.player?.timeControlStatus != .playing {
-                        self.videoPlayer.player?.pause()
-                    }
+                    self.videoPlayer.player = nil
                 }
             } else {
                 self.videoPlayer.player?.pause()
@@ -30,10 +27,7 @@ extension MediaPlayerView {
             if self.ios?.enableBackgroundPlay == true {
                 self.isInBackgroundMode = false
                 if self.isInPipMode != true {
-                    self.videoTrackEnable(playerItem: self.playerItem, enable: true)
-                    if self.videoPlayer.player?.timeControlStatus == .playing {
-                        self.videoPlayer.player?.play()
-                    }
+                    self.videoPlayer.player = self.player
                 }
             }
         }
@@ -77,9 +71,6 @@ extension MediaPlayerView {
                 case .waitingToPlayAtSpecifiedRate:
                     break
                 case .paused:
-                    if self.isInBackgroundMode == true || self.isInPipMode == true {
-                        break
-                    }
                     NotificationCenter.default.post(
                         name: .mediaPlayerPause,
                         object: nil,
