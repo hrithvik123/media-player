@@ -17,10 +17,12 @@ extension MediaPlayerView: AVPlayerViewControllerDelegate {
     }
     
     public func playerViewControllerDidStartPictureInPicture(_ playerViewController: AVPlayerViewController){
+         self.isInPipMode = true
         NotificationCenter.default.post(name: .mediaPlayerPictureInPicture, object: nil, userInfo: ["playerId": self.playerId, "isInPictureInPicture": true])
     }
     
     public func playerViewControllerDidStopPictureInPicture(_ playerViewController: AVPlayerViewController){
+        self.isInPipMode = false
         NotificationCenter.default.post(name: .mediaPlayerPictureInPicture, object: nil, userInfo: ["playerId": self.playerId, "isInPictureInPicture": false])
     }
     
