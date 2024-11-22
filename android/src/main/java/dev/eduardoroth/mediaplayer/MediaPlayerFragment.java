@@ -532,11 +532,13 @@ public class MediaPlayerFragment extends Fragment {
             public void handleOnBackPressed() {
                 if (player.isPlaying() && android.automaticallyEnterPiP) {
                     startPictureInPicture();
-                } else {
+                }
+                // This may affect default handlers on apps that don't implement it.
+                /*else {
                     if (webView.canGoBack()) {
                         webView.goBack();
                     }
-                }
+                }*/
             }
         };
         requireActivity().addOnPictureInPictureModeChangedListener(onPictureInPictureModeChangedListener);
