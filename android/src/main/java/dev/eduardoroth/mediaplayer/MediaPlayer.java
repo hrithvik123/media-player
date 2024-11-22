@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.media3.common.C;
 import androidx.media3.common.PlaybackParameters;
 
 import com.getcapacitor.Bridge;
@@ -126,7 +127,7 @@ public class MediaPlayer {
         JSObject ret = new JSObject();
         ret.put("method", "getDuration");
         ret.put("result", true);
-        ret.put("value", player.player.getDuration() == -1 ? 0 : (int) (player.player.getDuration() / 1000));
+        ret.put("value", player.player.getDuration() == C.TIME_UNSET ? 0 : (player.player.getDuration() / 1000));
         call.resolve(ret);
     }
 
@@ -143,7 +144,7 @@ public class MediaPlayer {
         JSObject ret = new JSObject();
         ret.put("method", "getCurrentTime");
         ret.put("result", true);
-        ret.put("value", player.player.getCurrentPosition() == -1 ? 0 : (int) (player.player.getCurrentPosition() / 1000));
+        ret.put("value", player.player.getCurrentPosition() == C.TIME_UNSET ? 0 : (player.player.getCurrentPosition() / 1000));
         call.resolve(ret);
     }
 
@@ -157,9 +158,9 @@ public class MediaPlayer {
             call.resolve(ret);
             return;
         }
-        Double seekPosition = player.player.getCurrentPosition() == -1
+        Double seekPosition = player.player.getCurrentPosition() == C.TIME_UNSET
                 ? 0
-                : Math.min(Math.max(0, time * 1000), player.player.getDuration() == -1 ? 0 : (int) (player.player.getDuration() / 1000));
+                : Math.min(Math.max(0, time * 1000), player.player.getDuration() == C.TIME_UNSET ? 0 : player.player.getDuration());
         player.player.seekTo(seekPosition.longValue());
         JSObject ret = new JSObject();
         ret.put("method", "setCurrentTime");
