@@ -62,7 +62,7 @@ public class MediaPlayer {
                                 FragmentHelpers fragmentHelpers = new FragmentHelpers(bridge);
                                 int layoutId = fragmentHelpers.getIdFromPlayerId(playerId);
 
-                                MediaPlayerFragment player = new MediaPlayerFragment(fragmentHelpers, context, castContext, layoutId, playerId, url, android, extra);
+                                MediaPlayerFragment player = new MediaPlayerFragment(fragmentHelpers, context, castContext, layoutId, playerId, url, android, extra, bridge.getWebView());
                                 ((ViewGroup) bridge.getWebView().getParent()).addView(player.layout);
 
                                 fragmentHelpers.loadFragment(player, player.layoutId);

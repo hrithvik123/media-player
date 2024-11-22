@@ -1,22 +1,5 @@
 package dev.eduardoroth.mediaplayer;
 
-/*
-OK Ready
-OK PLay
-OK Pause
-OK Ended
-
-Fullscreen
-PictureInPicture
-
-Removed
-
-OK Seeked
-
-TimeUpdate
-
- */
-
 import android.Manifest;
 import android.content.Context;
 
@@ -51,7 +34,6 @@ import dev.eduardoroth.mediaplayer.utilities.RunnableHelper;
                         strings = {Manifest.permission.READ_EXTERNAL_STORAGE})
         })
 public class MediaPlayerPlugin extends Plugin {
-    private static final String TAG = "MediaPlayer";
     private Context context;
     private CastContext castContext;
     private MediaPlayer implementation;
@@ -65,7 +47,7 @@ public class MediaPlayerPlugin extends Plugin {
         } catch (RuntimeException ignored) {
         }
         addObserversToNotificationCenter();
-        implementation = new MediaPlayer(context, castContext, getBridge());
+        implementation = new MediaPlayer(context, castContext, bridge);
         this.fileHelpers = new FileHelpers(context);
     }
 

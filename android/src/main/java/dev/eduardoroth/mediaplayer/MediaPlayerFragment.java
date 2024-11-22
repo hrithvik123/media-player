@@ -1,10 +1,13 @@
 package dev.eduardoroth.mediaplayer;
 
+import static android.app.Notification.BADGE_ICON_LARGE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Process.*;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PictureInPictureParams;
 import android.app.UiModeManager;
 import android.content.ContentUris;
@@ -34,7 +37,6 @@ import android.widget.LinearLayout;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.app.PictureInPictureModeChangedInfo;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -54,12 +56,14 @@ import androidx.media3.exoplayer.trackselection.AdaptiveTrackSelection;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter;
 import androidx.media3.session.MediaSession;
+import androidx.media3.ui.PlayerNotificationManager;
 import androidx.media3.ui.PlayerView;
 import androidx.mediarouter.app.MediaRouteButton;
 import androidx.mediarouter.media.MediaControlIntent;
 import androidx.mediarouter.media.MediaRouteSelector;
 import androidx.mediarouter.media.MediaRouter;
 
+import android.webkit.WebView;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastState;
@@ -100,6 +104,7 @@ public class MediaPlayerFragment extends Fragment {
     private Uri videoPath;
     private final AndroidOptions android;
     private final ExtraOptions extra;
+    private final WebView webView;
 
     /**
      * Player
@@ -145,6 +150,7 @@ public class MediaPlayerFragment extends Fragment {
      */
     private MediaSession mediaSession;
     private final SubtitlesHelpers subtitlesHelpers;
+    private PlayerNotificationManager playerNotificationManager;
 
     /**
      * Helpers
@@ -163,12 +169,13 @@ public class MediaPlayerFragment extends Fragment {
     private MediaRouteButton castButton;
     private ImageButton pipButton;
 
-    public MediaPlayerFragment(FragmentHelpers fragmentHelpers, Context context, CastContext castContext, int layoutId, String playerId, Uri url, AndroidOptions android, ExtraOptions extra) {
+    public MediaPlayerFragment(FragmentHelpers fragmentHelpers, Context context, CastContext castContext, int layoutId, String playerId, Uri url, AndroidOptions android, ExtraOptions extra, WebView webView) {
         this.fragmentHelpers = fragmentHelpers;
         this.context = context;
         this.castContext = castContext;
         this.playerId = playerId;
         this.layoutId = layoutId;
+        this.webView = webView;
 
         this.PLAYBACK_TIME = playerId + ":CURRENT_TIME";
         this.url = url;
@@ -195,17 +202,18 @@ public class MediaPlayerFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setupNotificationManager();
         createPlayer();
         if (android.enableChromecast) {
             setupChromeCast();
             addChromecastListeners();
         }
-        if (savedInstanceState != null) {
-            player.seekTo(savedInstanceState.getInt(PLAYBACK_TIME));
-        }
         addActivityListeners();
         addPlayerListeners();
         setCurrentPlayer(castPlayer != null && castPlayer.isCastSessionAvailable() ? castPlayer : localPlayer);
+        if (savedInstanceState != null) {
+            player.seekTo(savedInstanceState.getInt(PLAYBACK_TIME));
+        }
     }
 
     @Override
@@ -279,6 +287,40 @@ public class MediaPlayerFragment extends Fragment {
         localPlayer = builder.build();
     }
 
+    private void setupNotificationManager() {
+        playerNotificationManager = new PlayerNotificationManager
+                .Builder(context, layoutId, context.getString(R.string.channel_id))
+                .setChannelNameResourceId(R.string.channel_name)
+                .setChannelDescriptionResourceId(R.string.channel_description)
+                .setChannelImportance(NotificationManager.IMPORTANCE_DEFAULT)
+                .setNotificationListener(new PlayerNotificationManager.NotificationListener() {
+                    @Override
+                    public void onNotificationCancelled(int notificationId, boolean dismissedByUser) {
+                        PlayerNotificationManager.NotificationListener.super.onNotificationCancelled(notificationId, dismissedByUser);
+                    }
+
+                    @Override
+                    public void onNotificationPosted(int notificationId, @NonNull Notification notification, boolean ongoing) {
+                        PlayerNotificationManager.NotificationListener.super.onNotificationPosted(notificationId, notification, ongoing);
+                    }
+                })
+                .build();
+        playerNotificationManager.setBadgeIconType(BADGE_ICON_LARGE);
+        playerNotificationManager.setShowPlayButtonIfPlaybackIsSuppressed(true);
+        playerNotificationManager.setUseChronometer(true);
+        playerNotificationManager.setUseFastForwardAction(true);
+        playerNotificationManager.setUseFastForwardActionInCompactView(true);
+        playerNotificationManager.setUseNextAction(false);
+        playerNotificationManager.setUseNextActionInCompactView(false);
+        playerNotificationManager.setUsePlayPauseActions(true);
+        playerNotificationManager.setUsePreviousAction(false);
+        playerNotificationManager.setUsePreviousActionInCompactView(false);
+        playerNotificationManager.setUseRewindAction(true);
+        playerNotificationManager.setUseRewindActionInCompactView(true);
+        playerNotificationManager.setUseStopAction(true);
+
+    }
+
     @SuppressLint("UseCompatLoadingForDrawables")
     private void setupChromeCast() {
         if (castContext != null) {
@@ -300,7 +342,7 @@ public class MediaPlayerFragment extends Fragment {
             castButton.setRemoteIndicatorDrawable(drawable);
             if (castContext.getCastState() != CastState.NO_DEVICES_AVAILABLE) {
                 castButton.setVisibility(View.VISIBLE);
-            } else{
+            } else {
                 castButton.setVisibility(View.GONE);
             }
 
@@ -412,10 +454,8 @@ public class MediaPlayerFragment extends Fragment {
                             break;
                     }
                 }
-                return true;
-            } else {
-                return false;
             }
+            return true;
         };
         int defaultOrientation = requireActivity().getRequestedOrientation();
         fullscreenButtonClickListener = isFullScreen -> {
@@ -492,12 +532,15 @@ public class MediaPlayerFragment extends Fragment {
             public void handleOnBackPressed() {
                 if (player.isPlaying() && android.automaticallyEnterPiP) {
                     startPictureInPicture();
+                } else {
+                    if (webView.canGoBack()) {
+                        webView.goBack();
+                    }
                 }
             }
         };
-
         requireActivity().addOnPictureInPictureModeChangedListener(onPictureInPictureModeChangedListener);
-        requireActivity().getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
+        requireActivity().getOnBackPressedDispatcher().addCallback(requireActivity(), onBackPressedCallback);
     }
 
     private void removeActivityListeners() {
@@ -608,7 +651,6 @@ public class MediaPlayerFragment extends Fragment {
 
         currentPlayer.setVolume(1);
         player = currentPlayer;
-
         playerView.setPlayer(currentPlayer);
 
         List<MediaItem.SubtitleConfiguration> subtitlesConfig = new ArrayList<MediaItem.SubtitleConfiguration>();
@@ -653,11 +695,13 @@ public class MediaPlayerFragment extends Fragment {
 
         if (mediaSession == null) {
             mediaSession = new MediaSession
-                    .Builder(context, currentPlayer)
+                    .Builder(context, player)
                     .setPeriodicPositionUpdateEnabled(true)
                     .build();
         }
         mediaSession.setPlayer(player);
+        playerNotificationManager.setPlayer(player);
+        playerNotificationManager.setMediaSessionToken(mediaSession.getPlatformToken());
         player.prepare();
     }
 
@@ -694,8 +738,14 @@ public class MediaPlayerFragment extends Fragment {
         }
         localPlayer.release();
         localPlayer = null;
-        mediaSession.release();
-        mediaSession = null;
+        if (mediaSession != null) {
+            mediaSession.release();
+            mediaSession = null;
+        }
+        if (playerNotificationManager != null) {
+            playerNotificationManager.setPlayer(null);
+            playerNotificationManager.invalidate();
+        }
         playerView.setPlayer(null);
     }
 
@@ -795,8 +845,8 @@ public class MediaPlayerFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         clearMediaPlayer();
+        super.onDestroy();
     }
 
 }
