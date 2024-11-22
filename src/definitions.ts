@@ -111,6 +111,7 @@ export type MediaPlayerAndroidOptions = {
   enablePiP?: boolean;
   enableBackgroundPlay?: boolean;
   openInFullscreen?: boolean;
+  automaticallyEnterPiP?: boolean;
   top?: number;
   left?: number;
   height?: number;

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="media_route_menu_title">Cast</string>
+    <string name="cast_context_error">Failed to get Cast context. Try updating Google Play Services and restart the app.</string>
+    <string name="picture_in_picture_button">Picture in picture button</string>
+</resources>
