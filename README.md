@@ -459,12 +459,12 @@ removeAllListeners(playerId: string) => Promise<void>
 
 #### MediaPlayerIosOptions
 
-<code>{ enableExternalPlayback?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; top?: number; left?: number; height?: number; width?: number; }</code>
+<code>{ enableExternalPlayback?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; top?: number; left?: number; height?: number; width?: number; }</code>
 
 
 #### MediaPlayerAndroidOptions
 
-<code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; top?: number; left?: number; height?: number; width?: number; }</code>
+<code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; top?: number; left?: number; height?: number; width?: number; }</code>
 
 
 #### MediaPlayerWebOptions
