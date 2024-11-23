@@ -30,11 +30,11 @@ import AVKit
                 height: ios.height
             )
             let videoPlayer = mediaPlayerView.videoPlayer
-            videoPlayer.view.bounds = videoFrame
+            //videoPlayer.view.bounds = videoFrame
             videoPlayer.view.frame = videoFrame
             videoPlayer.beginAppearanceTransition(true, animated: true)
-            self.bridge?.webView?.addSubview(videoPlayer.view)
-            self.bridge?.webView?.bringSubviewToFront(videoPlayer.view)
+            self.bridge?.webView?.superview?.addSubview(videoPlayer.view)
+            self.bridge?.webView?.superview?.bringSubviewToFront(videoPlayer.view)
             self.addPlayers(player: mediaPlayerView)
         }
         call.resolve(["result": true, "method": "create", "value": playerId]);

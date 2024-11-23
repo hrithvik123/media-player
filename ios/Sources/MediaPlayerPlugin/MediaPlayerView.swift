@@ -12,6 +12,7 @@ open class MediaPlayerView: UIView {
     var isPIPModeAvailable: Bool = false
     var isInBackgroundMode: Bool = false
     var isInPipMode: Bool = false
+    var isFullscreen: Bool = false
     
     var currentTime: Double = 0
     var duration: Double = 0
@@ -26,7 +27,8 @@ open class MediaPlayerView: UIView {
     var rateObserver: NSKeyValueObservation?
     var timeObserver: NSKeyValueObservation?
     var seekObserver: NSKeyValueObservation?
-    
+
+    var screenRotationObserver: Any?
     var backgroundObserver: Any?
     var foregroundObserver: Any?
 
@@ -62,7 +64,6 @@ open class MediaPlayerView: UIView {
         player = AVPlayer(playerItem: playerItem)
 
         videoPlayer.showsPlaybackControls = self.extra?.showControls == true
-        videoPlayer.updatesNowPlayingInfoCenter = false
 
         if (UIDevice.current.userInterfaceIdiom == UIUserInterfaceIdiom.pad),
            #available(iOS 13.0, *) {
@@ -78,6 +79,8 @@ open class MediaPlayerView: UIView {
             }
         }
         videoPlayer.allowsPictureInPicturePlayback = (isPIPModeAvailable && self.ios?.enablePiP == true)
+        videoPlayer.videoGravity = .resizeAspectFill
+        
         player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
         videoPlayer.player = player
 
@@ -98,6 +101,19 @@ open class MediaPlayerView: UIView {
                 print(error)
             }
         }
+    }
+    
+    public func updatePlayerLayout() {
+        let videoFrame = CGRect(
+            x: self.ios!.left,
+            y: self.ios!.top,
+            width: self.ios!.width,
+            height: self.ios!.height
+        )
+        self.videoPlayer.beginAppearanceTransition(true, animated: true)
+        self.videoPlayer.view.bounds = videoFrame
+        self.videoPlayer.view.frame = videoFrame
+        self.videoPlayer.view.superview?.bringSubviewToFront(self.videoPlayer.view)
     }
 
     public required init?(coder: NSCoder) {

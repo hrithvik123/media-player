@@ -100,6 +100,7 @@ export type MediaPlayerIosOptions = {
   enableBackgroundPlay?: boolean;
   openInFullscreen?: boolean;
   automaticallyEnterPiP?: boolean;
+  fullscreenOnLandscape?: boolean;
   top?: number;
   left?: number;
   height?: number;
@@ -112,6 +113,7 @@ export type MediaPlayerAndroidOptions = {
   enableBackgroundPlay?: boolean;
   openInFullscreen?: boolean;
   automaticallyEnterPiP?: boolean;
+  fullscreenOnLandscape?: boolean;
   top?: number;
   left?: number;
   height?: number;

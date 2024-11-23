@@ -78,7 +78,7 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
         let subtitleOptions = extraOptions["subtitles"] as? [String: Any] ?? nil
         
         let ios = MediaPlayerIosOptions(
-            enableExternalPlayback: iosOptions["enableExternalPlayback"] as? Bool, enablePiP: iosOptions["enablePiP"] as? Bool, enableBackgroundPlay: iosOptions["enableBackgroundPlay"] as? Bool, openInFullscreen: iosOptions["openInFullscreen"] as? Bool, automaticallyEnterPiP: iosOptions["automaticallyEnterPiP"] as? Bool, top: iosOptions["top"] as? Float, left: iosOptions["left"] as? Float, height: iosOptions["height"] as? Float, width: iosOptions["width"] as? Float
+            enableExternalPlayback: iosOptions["enableExternalPlayback"] as? Bool, enablePiP: iosOptions["enablePiP"] as? Bool, enableBackgroundPlay: iosOptions["enableBackgroundPlay"] as? Bool, openInFullscreen: iosOptions["openInFullscreen"] as? Bool, automaticallyEnterPiP: iosOptions["automaticallyEnterPiP"] as? Bool, top: iosOptions["top"] as? Float, left: iosOptions["left"] as? Float, height: iosOptions["height"] as? Float, width: iosOptions["width"] as? Float, fullscreenOnLandscape: iosOptions["fullscreenOnLandscape"] as? Bool
         )
                         
         var subTitle: URL?

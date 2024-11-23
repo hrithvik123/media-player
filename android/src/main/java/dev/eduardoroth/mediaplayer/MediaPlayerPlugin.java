@@ -112,6 +112,7 @@ public class MediaPlayerPlugin extends Plugin {
                 androidOptions.getBoolean("enableBackgroundPlay", true),
                 androidOptions.getBoolean("openInFullscreen", false),
                 androidOptions.getBoolean("automaticallyEnterPiP", false),
+                androidOptions.getBoolean("fullscreenOnLandscape", true),
                 top,
                 left,
                 height,

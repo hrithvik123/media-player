@@ -3,6 +3,22 @@ import MediaPlayer
 extension MediaPlayerView {
     
     func addObservers() {
+
+        self.screenRotationObserver = NotificationCenter.default.addObserver(
+            forName: UIDevice.orientationDidChangeNotification,
+            object: nil,
+            queue: nil
+        ){(_) in
+            if self.ios?.fullscreenOnLandscape == true {
+                if UIDevice.current.orientation.isLandscape {
+                    self.videoPlayer.enterFullScreen(animated: true)
+                } else {
+                    self.videoPlayer.exitFullScreen(animated: true)
+                }
+            } else {
+                self.updatePlayerLayout()
+            }
+        }
         
         self.backgroundObserver = NotificationCenter.default.addObserver(
             forName: UIApplication.didEnterBackgroundNotification,
@@ -142,6 +158,7 @@ extension MediaPlayerView {
         
         NotificationCenter.default.removeObserver(self.backgroundObserver!)
         NotificationCenter.default.removeObserver(self.foregroundObserver!)
+        NotificationCenter.default.removeObserver(self.screenRotationObserver!)
         
     }
 }

@@ -18,6 +18,7 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.hardware.SensorManager;
 import android.media.MediaCodec;
 import android.net.Uri;
 import android.os.Build;
@@ -28,6 +29,7 @@ import android.util.DisplayMetrics;
 import android.util.Rational;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -131,7 +133,7 @@ public class MediaPlayerFragment extends Fragment {
     private OnBackPressedCallback onBackPressedCallback;
     private PlayerView.ControllerVisibilityListener controllerVisibilityListener;
     private View.OnClickListener pipButtonClickListener;
-
+    private OrientationEventListener orientationEventListener;
     /**
      * Chromecast
      */
@@ -459,23 +461,7 @@ public class MediaPlayerFragment extends Fragment {
         };
         int defaultOrientation = requireActivity().getRequestedOrientation();
         fullscreenButtonClickListener = isFullScreen -> {
-            HashMap<String, Object> info = new HashMap<String, Object>();
-            info.put("playerId", playerId);
-            info.put("isInFullScreen", isFullScreen);
-            NotificationHelpers.defaultCenter().postNotification("MediaPlayer:Fullscreen", info);
-            fragmentHelpers.updateFragmentLayout(fragment, isFullScreen);
-            if (isFullScreen) {
-                requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
-                requireActivity().getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                );
-            } else {
-                requireActivity().setRequestedOrientation(defaultOrientation);
-                requireActivity().getWindow()
-                        .setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-            }
+            setFullscreenMode(isFullScreen, defaultOrientation);
         };
         controllerVisibilityListener = visibility -> {
             rightButtons.setVisibility(visibility);
@@ -541,11 +527,25 @@ public class MediaPlayerFragment extends Fragment {
                 }*/
             }
         };
+        /*orientationEventListener = new OrientationEventListener(context, SensorManager.SENSOR_DELAY_UI) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                if (android.fullscreenOnLandscape) {
+                    if (orientation >= (90 - 50) && orientation <= (90 + 50)) {
+                        setFullscreenMode(true);
+                    } else {
+                        setFullscreenMode(false);
+                    }
+                }
+            }
+        };
+        orientationEventListener.enable();*/
         requireActivity().addOnPictureInPictureModeChangedListener(onPictureInPictureModeChangedListener);
         requireActivity().getOnBackPressedDispatcher().addCallback(requireActivity(), onBackPressedCallback);
     }
 
     private void removeActivityListeners() {
+        //orientationEventListener.disable();
         requireActivity().removeOnPictureInPictureModeChangedListener(onPictureInPictureModeChangedListener);
         onBackPressedCallback.setEnabled(false);
     }
@@ -727,6 +727,26 @@ public class MediaPlayerFragment extends Fragment {
             }
         }
         return false;
+    }
+
+    private void setFullscreenMode(boolean isFullScreen, int defaultOrientation){
+        HashMap<String, Object> info = new HashMap<String, Object>();
+        info.put("playerId", playerId);
+        info.put("isInFullScreen", isFullScreen);
+        NotificationHelpers.defaultCenter().postNotification("MediaPlayer:Fullscreen", info);
+        fragmentHelpers.updateFragmentLayout(this, isFullScreen);
+        if (isFullScreen) {
+            requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
+            requireActivity().getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+        } else {
+            requireActivity().setRequestedOrientation(defaultOrientation);
+            requireActivity().getWindow()
+                    .setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+                            WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+        }
     }
 
     private void clearMediaPlayer() {

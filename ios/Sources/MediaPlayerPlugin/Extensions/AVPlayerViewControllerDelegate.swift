@@ -30,6 +30,10 @@ extension MediaPlayerView: AVPlayerViewControllerDelegate {
         _ playerViewController: AVPlayerViewController,
         willBeginFullScreenPresentationWithAnimationCoordinator coordinator: any UIViewControllerTransitionCoordinator
     ){
+        self.isFullscreen = true
+        coordinator.animate(alongsideTransition: nil) {_ in
+            self.videoPlayer.view.superview?.bringSubviewToFront(self.videoPlayer.view)
+        }
         NotificationCenter.default.post(name: .mediaPlayerFullscreen, object: nil, userInfo: ["playerId": self.playerId, "isInFullScreen": true])
     }
     
@@ -37,14 +41,21 @@ extension MediaPlayerView: AVPlayerViewControllerDelegate {
         _ playerViewController: AVPlayerViewController,
         willEndFullScreenPresentationWithAnimationCoordinator coordinator: any UIViewControllerTransitionCoordinator
     ){
-        let videoFrame = CGRect(
-            x: self.ios!.left,
-            y: self.ios!.top,
-            width: self.ios!.width,
-            height: self.ios!.height
-        )
-        self.videoPlayer.view.bounds = videoFrame
-        self.videoPlayer.view.frame = videoFrame
+        self.isFullscreen = false
+        let isPlaying = self.videoPlayer.player?.timeControlStatus == .playing
+        self.updatePlayerLayout()
+        coordinator.animate(alongsideTransition: nil) { _ in
+            self.videoPlayer.view.superview?.bringSubviewToFront(self.videoPlayer.view)
+            if isPlaying {
+                self.videoPlayer.player?.play()
+            }
+        }
+    }
+    
+    public func playerViewController(
+        _ playerViewController: AVPlayerViewController,
+        didEndFullScreenPresentationWithAnimationCoordinator coordinator: any UIViewControllerTransitionCoordinator
+    ){
         NotificationCenter.default.post(name: .mediaPlayerFullscreen, object: nil, userInfo: ["playerId": self.playerId, "isInFullScreen": false])
     }
     
