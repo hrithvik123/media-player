@@ -163,6 +163,7 @@ public class MediaPlayerPlugin extends Plugin {
                 extraOptions.getString("artist"),
                 rate,
                 subtitles,
+                extraOptions.getBoolean("autoPlayWhenReady", false),
                 extraOptions.getBoolean("loopOnEnd", false),
                 extraOptions.getBoolean("showControls", true),
                 extraOptions.getJSObject("headers")

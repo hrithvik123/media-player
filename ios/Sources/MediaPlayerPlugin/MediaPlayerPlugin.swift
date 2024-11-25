@@ -112,7 +112,7 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         
         let extra = MediaPlayerExtraOptions(
-            title: extraOptions["title"] as? String, subtitle: extraOptions["subtitle"] as? String, poster: posterURL, artist: extraOptions["artist"] as? String, rate: extraOptions["rate"] as? Float, subtitles: subtitles, loopOnEnd: extraOptions["loopOnEnd"] as? Bool, showControls:extraOptions["showControls"] as? Bool, headers: extraOptions["headers"] as? [String: String]
+            title: extraOptions["title"] as? String, subtitle: extraOptions["subtitle"] as? String, poster: posterURL, artist: extraOptions["artist"] as? String, rate: extraOptions["rate"] as? Float, subtitles: subtitles, autoPlayWhenReady: extraOptions["autoPlayWhenReady"] as? Bool, loopOnEnd: extraOptions["loopOnEnd"] as? Bool, showControls:extraOptions["showControls"] as? Bool, headers: extraOptions["headers"] as? [String: String]
         )
         
         implementation.create(call: call, playerId: playerId, url: parsedUrl, ios: ios, extra: extra)

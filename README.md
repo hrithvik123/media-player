@@ -3,6 +3,13 @@
 Native Media Player for iOS, Android and Browser.
 Based on the great work of [@jepiqueau](https://github.com/jepiqueau)
 
+- iOS
+  - AVPlayer
+- Android
+  - ExoPlayer3
+- Web
+  - Vidstack
+
 ## Install
 
 ```bash
@@ -454,7 +461,7 @@ removeAllListeners(playerId: string) => Promise<void>
 
 #### MediaPlayerOptions
 
-<code>{ playerId: string; url: string; ios?: <a href="#mediaplayeriosoptions">MediaPlayerIosOptions</a>; android?: <a href="#mediaplayerandroidoptions">MediaPlayerAndroidOptions</a>; web?: <a href="#mediaplayerweboptions">MediaPlayerWebOptions</a>; extra?: { title?: string; subtitle?: string; poster?: string; artist?: string; rate?: number; subtitles?: <a href="#mediaplayersubtitleoptions">MediaPlayerSubtitleOptions</a>; loopOnEnd?: boolean; showControls?: boolean; headers?: { [key: string]: string; }; }; }</code>
+<code>{ playerId: string; url: string; ios?: <a href="#mediaplayeriosoptions">MediaPlayerIosOptions</a>; android?: <a href="#mediaplayerandroidoptions">MediaPlayerAndroidOptions</a>; web?: <a href="#mediaplayerweboptions">MediaPlayerWebOptions</a>; extra?: <a href="#mediaplayerextraoptions">MediaPlayerExtraOptions</a>; }</code>
 
 
 #### MediaPlayerIosOptions
@@ -470,6 +477,11 @@ removeAllListeners(playerId: string) => Promise<void>
 #### MediaPlayerWebOptions
 
 <code>{ enableChromecast?: boolean; }</code>
+
+
+#### MediaPlayerExtraOptions
+
+<code>{ title?: string; subtitle?: string; poster?: string; artist?: string; rate?: number; subtitles?: <a href="#mediaplayersubtitleoptions">MediaPlayerSubtitleOptions</a>; autoPlayWhenReady?: boolean; loopOnEnd?: boolean; showControls?: boolean; headers?: { [key: string]: string; }; }</code>
 
 
 #### MediaPlayerSubtitleOptions

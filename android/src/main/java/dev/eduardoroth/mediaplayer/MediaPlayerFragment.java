@@ -413,6 +413,9 @@ public class MediaPlayerFragment extends Fragment {
                         break;
                     case Player.STATE_READY:
                         NotificationHelpers.defaultCenter().postNotification("MediaPlayer:Ready", info);
+                        if (extra.autoPlayWhenReady == true) {
+                            player.play();
+                        }
                         break;
                 }
             }

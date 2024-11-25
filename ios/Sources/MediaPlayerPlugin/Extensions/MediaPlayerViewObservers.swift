@@ -62,6 +62,9 @@ extension MediaPlayerView {
                         self.setNowPlayingImage()
                         self.setRemoteCommandCenter()
                         NotificationCenter.default.post(name: .mediaPlayerReady, object: nil, userInfo: ["playerId": self.playerId, "currentTime": self.currentTime, "videoRate": self.rate])
+                        if self.extra?.autoPlayWhenReady == true {
+                            player.play();
+                        }
                     case .failed, .unknown:
                         self.isLoaded = false
                         self.isVideoEnd = false

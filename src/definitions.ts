@@ -63,19 +63,7 @@ export type MediaPlayerOptions = {
   ios?: MediaPlayerIosOptions;
   android?: MediaPlayerAndroidOptions;
   web?: MediaPlayerWebOptions;
-  extra?: {
-    title?: string;
-    subtitle?: string;
-    poster?: string;
-    artist?: string;
-    rate?: number;
-    subtitles?: MediaPlayerSubtitleOptions;
-    loopOnEnd?: boolean;
-    showControls?: boolean;
-    headers?: {
-      [key: string]: string;
-    };
-  };
+  extra?: MediaPlayerExtraOptions;
 };
 
 export type MediaPlayerIdOptions = {
@@ -92,6 +80,21 @@ export type MediaPlayerSetVolumeOptions = {
 export type MediaPlayerSetRateOptions = {
   playerId: string;
   rate: number;
+};
+
+export type MediaPlayerExtraOptions = {
+  title?: string;
+  subtitle?: string;
+  poster?: string;
+  artist?: string;
+  rate?: number;
+  subtitles?: MediaPlayerSubtitleOptions;
+  autoPlayWhenReady?: boolean;
+  loopOnEnd?: boolean;
+  showControls?: boolean;
+  headers?: {
+    [key: string]: string;
+  };
 };
 
 export type MediaPlayerIosOptions = {
@@ -140,4 +143,4 @@ export type MediaPlayerResult<ResultValueType> = {
   value?: ResultValueType;
   error?: Error;
   message?: string;
-}
+};

@@ -7,6 +7,7 @@ public class MediaPlayerExtraOptions: NSObject {
     var artist: String?
     var rate: Float
     var subtitles: MediaPlayerSubtitleOptions?
+    var autoPlayWhenReady: Bool
     var loopOnEnd: Bool
     var showControls: Bool
     var headers: [String: String]?
@@ -18,6 +19,7 @@ public class MediaPlayerExtraOptions: NSObject {
         artist: String?,
         rate: Float?,
         subtitles: MediaPlayerSubtitleOptions?,
+        autoPlayWhenReady: Bool?,
         loopOnEnd: Bool?,
         showControls: Bool?,
         headers: [String: String]?
@@ -28,6 +30,7 @@ public class MediaPlayerExtraOptions: NSObject {
         self.artist = artist
         self.rate = rate ?? 1.0
         self.subtitles = subtitles
+        self.autoPlayWhenReady = autoPlayWhenReady ?? false
         self.loopOnEnd = loopOnEnd ?? false
         self.showControls = showControls ?? true
         self.headers = headers

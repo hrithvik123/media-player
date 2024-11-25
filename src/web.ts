@@ -49,6 +49,9 @@ export class MediaPlayerWeb extends WebPlugin implements MediaPlayerPlugin {
       });
       this.createPlayerListeners(playerId, player);
       this._players.set(playerId, player);
+      if(options.extra?.autoPlayWhenReady == true){
+        player.play();
+      }
       return {
         method: 'create',
         result: true,
