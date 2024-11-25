@@ -35,16 +35,25 @@ open class MediaPlayerView: UIView {
     var periodicTimeObserver: Any?
     
     var player: AVPlayer?
+    var playerFrame: CGRect
     var videoPlayer: AVPlayerViewController
     var videoAsset: AVURLAsset
     var playerItem: AVPlayerItem?
     var audioSession: AVAudioSession?
 
-    init(playerId: String, url: URL, ios: MediaPlayerIosOptions?, extra: MediaPlayerExtraOptions?) {
+    init(playerId: String, url: URL, ios: MediaPlayerIosOptions, extra: MediaPlayerExtraOptions) {
         self.playerId = playerId
         self.url = url
         self.ios = ios
         self.extra = extra
+        
+        playerFrame = CGRect(
+            x: ios.left,
+            y: ios.top,
+            width: ios.width,
+            height: ios.height
+        )
+        
         videoPlayer = AVPlayerViewController()
 
         if(self.extra?.headers != nil){
@@ -53,8 +62,11 @@ open class MediaPlayerView: UIView {
             videoAsset = AVURLAsset(url: url)
         }
         
-        super.init(frame: .zero)
+        super.init(frame: playerFrame)
+        self.clipsToBounds = true
+        self.contentMode = .scaleAspectFit
         videoPlayer.delegate = self
+        videoPlayer.view.frame = self.bounds
 
         if(self.extra?.subtitles != nil) {
             setSubtitles()
@@ -79,9 +91,6 @@ open class MediaPlayerView: UIView {
             }
         }
         videoPlayer.allowsPictureInPicturePlayback = (isPIPModeAvailable && self.ios?.enablePiP == true)
-        videoPlayer.videoGravity = .resizeAspectFill
-        
-        player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
         videoPlayer.player = player
 
         self.addObservers()
@@ -101,21 +110,18 @@ open class MediaPlayerView: UIView {
                 print(error)
             }
         }
+        
+        self.addSubview(videoPlayer.view)
     }
     
-    public func updatePlayerLayout() {
-        let videoFrame = CGRect(
-            x: self.ios!.left,
-            y: self.ios!.top,
-            width: self.ios!.width,
-            height: self.ios!.height
-        )
-        self.videoPlayer.beginAppearanceTransition(true, animated: true)
-        self.videoPlayer.view.bounds = videoFrame
-        self.videoPlayer.view.frame = videoFrame
-        self.videoPlayer.view.superview?.bringSubviewToFront(self.videoPlayer.view)
+    public func releasePlayer() {
+        self.removeObservers()
+        self.player?.replaceCurrentItem(with: nil)
+        self.videoPlayer.view.removeFromSuperview()
+        self.videoPlayer.removeFromParent()
+        self.removeFromSuperview()
     }
-
+    
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

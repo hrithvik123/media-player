@@ -43,12 +43,11 @@ extension MediaPlayerView: AVPlayerViewControllerDelegate {
     ){
         self.isFullscreen = false
         let isPlaying = self.videoPlayer.player?.timeControlStatus == .playing
-        self.updatePlayerLayout()
         coordinator.animate(alongsideTransition: nil) { _ in
-            self.videoPlayer.view.superview?.bringSubviewToFront(self.videoPlayer.view)
             if isPlaying {
                 self.videoPlayer.player?.play()
             }
+            self.superview?.bringSubviewToFront(self)
         }
     }
     

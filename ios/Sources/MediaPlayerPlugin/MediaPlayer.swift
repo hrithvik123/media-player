@@ -6,7 +6,7 @@ import AVKit
 @objc public class MediaPlayer: NSObject {
     var bridge:CAPBridgeProtocol?
 
-    var players: [MediaPlayerView] = []
+    var players: [String: MediaPlayerView] = [:]
 
     @objc func setBridge(bridge: CAPBridgeProtocol) {
         self.bridge = bridge
@@ -20,22 +20,15 @@ import AVKit
         extra: MediaPlayerExtraOptions
     ) {
         DispatchQueue.main.sync {
+            if let existingPlayer = getPlayer(playerId: playerId) {
+                existingPlayer.releasePlayer()
+                removePlayer(playerId: playerId)
+            }
             let mediaPlayerView = MediaPlayerView(
                 playerId: playerId, url: url, ios: ios, extra: extra
             )
-            let videoFrame = CGRect(
-                x: ios.left,
-                y: ios.top,
-                width: ios.width,
-                height: ios.height
-            )
-            let videoPlayer = mediaPlayerView.videoPlayer
-            //videoPlayer.view.bounds = videoFrame
-            videoPlayer.view.frame = videoFrame
-            videoPlayer.beginAppearanceTransition(true, animated: true)
-            self.bridge?.webView?.superview?.addSubview(videoPlayer.view)
-            self.bridge?.webView?.superview?.bringSubviewToFront(videoPlayer.view)
-            self.addPlayers(player: mediaPlayerView)
+            self.bridge?.webView?.superview?.addSubview(mediaPlayerView)
+            self.addPlayers(playerId: playerId, player: mediaPlayerView)
         }
         call.resolve(["result": true, "method": "create", "value": playerId]);
     }
@@ -141,19 +134,19 @@ import AVKit
             return
         }
         DispatchQueue.main.sync {
-            player.videoPlayer.view.removeFromSuperview()
+            player.releasePlayer()
+            removePlayer(playerId: playerId)
+            call.resolve(["result": true, "method": "remove", "value": playerId])
         }
-        removePlayer(playerId: playerId)
-        call.resolve(["result": true, "method": "remove", "value": playerId])
     }
     @objc func removeAll(call: CAPPluginCall) {
         DispatchQueue.main.sync {
-            players.forEach {
-                $0.videoPlayer.view.removeFromSuperview()
+            for(_, player) in players{
+                player.releasePlayer()
             }
+            removeAllPlayers()
+            call.resolve(["result": true, "method": "removeAll", "value": true])
         }
-        removeAllPlayers()
-        call.resolve(["result": true, "method": "removeAll", "value": true])
     }
 
 }

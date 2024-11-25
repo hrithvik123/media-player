@@ -15,8 +15,6 @@ extension MediaPlayerView {
                 } else {
                     self.videoPlayer.exitFullScreen(animated: true)
                 }
-            } else {
-                self.updatePlayerLayout()
             }
         }
         

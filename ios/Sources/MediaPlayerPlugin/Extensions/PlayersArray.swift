@@ -1,14 +1,11 @@
 extension MediaPlayer {
 
-    func addPlayers(player: MediaPlayerView) {
-        players.append(player)
+    func addPlayers(playerId: String, player: MediaPlayerView) {
+        players[playerId] = player
     }
 
     func removePlayer(playerId: String) {
-        guard let player = players.first(where: {$0.playerId == playerId}) else {
-            return
-        }
-        players.remove(at: players.firstIndex(of: player)!)
+        players.removeValue(forKey: playerId)
     }
 
     func removeAllPlayers() {
@@ -16,9 +13,6 @@ extension MediaPlayer {
     }
 
     func getPlayer(playerId: String) -> MediaPlayerView? {
-        guard let player = players.first(where: {$0.playerId == playerId}) else {
-            return nil
-        }
-        return player
+        return players[playerId]
     }
 }
