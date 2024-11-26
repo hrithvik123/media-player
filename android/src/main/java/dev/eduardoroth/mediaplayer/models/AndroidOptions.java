@@ -12,7 +12,7 @@ public class AndroidOptions {
     public double height;
     public double width;
 
-    public AndroidOptions(Boolean enableChromecast, Boolean enablePiP, Boolean enableBackgroundPlay, Boolean openInFullscreen, Boolean automaticallyEnterPiP, Boolean fullscreenOnLandscape, Double top, Double left, Double height, Double width) {
+    public AndroidOptions(boolean enableChromecast, boolean enablePiP, boolean enableBackgroundPlay, boolean openInFullscreen, boolean automaticallyEnterPiP, boolean fullscreenOnLandscape, Double top, Double left, Double height, Double width) {
         this.enableChromecast = enableChromecast;
         this.enablePiP = enablePiP;
         this.enableBackgroundPlay = enableBackgroundPlay;

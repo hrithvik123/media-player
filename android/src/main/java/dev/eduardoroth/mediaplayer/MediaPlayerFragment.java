@@ -144,10 +144,6 @@ public class MediaPlayerFragment extends Fragment {
     private CastPlayer.Listener castListener;
     private CastStateListener castStateListener;
     private SessionAvailabilityListener sessionAvailabilityListener;
-    private MediaRouter mRouter;
-    private final MediaRouter.Callback mCallback = new MediaRouter.Callback() {
-    };
-    private MediaRouteSelector mSelector;
 
     /**
      * Media session
@@ -524,7 +520,7 @@ public class MediaPlayerFragment extends Fragment {
         onBackPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (player.isPlaying() && android.automaticallyEnterPiP) {
+                if (player.isPlaying() && android.automaticallyEnterPiP == true) {
                     startPictureInPicture();
                 }
             }

@@ -107,12 +107,12 @@ public class MediaPlayerPlugin extends Plugin {
         }
 
         AndroidOptions android = new AndroidOptions(
-                androidOptions.getBoolean("enableChromecast", true),
-                androidOptions.getBoolean("enablePiP", true),
-                androidOptions.getBoolean("enableBackgroundPlay", true),
-                androidOptions.getBoolean("openInFullscreen", false),
-                androidOptions.getBoolean("automaticallyEnterPiP", false),
-                androidOptions.getBoolean("fullscreenOnLandscape", true),
+                androidOptions.optBoolean("enableChromecast", true),
+                androidOptions.optBoolean("enablePiP", true),
+                androidOptions.optBoolean("enableBackgroundPlay", true),
+                androidOptions.optBoolean("openInFullscreen", false),
+                androidOptions.optBoolean("automaticallyEnterPiP", false),
+                androidOptions.optBoolean("fullscreenOnLandscape", true),
                 top,
                 left,
                 height,
@@ -144,7 +144,7 @@ public class MediaPlayerPlugin extends Plugin {
             );
         }
 
-        double rate = Double.parseDouble("1");
+        double rate = 1;
         try {
             rate = extraOptions.getDouble("rate");
         } catch (JSONException ignored) {
@@ -163,9 +163,9 @@ public class MediaPlayerPlugin extends Plugin {
                 extraOptions.getString("artist"),
                 rate,
                 subtitles,
-                extraOptions.getBoolean("autoPlayWhenReady", false),
-                extraOptions.getBoolean("loopOnEnd", false),
-                extraOptions.getBoolean("showControls", true),
+                extraOptions.optBoolean("autoPlayWhenReady", false),
+                extraOptions.optBoolean("loopOnEnd", false),
+                extraOptions.optBoolean("showControls", true),
                 extraOptions.getJSObject("headers")
         );
 

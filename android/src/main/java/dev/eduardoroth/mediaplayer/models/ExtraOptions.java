@@ -7,14 +7,14 @@ public class ExtraOptions {
     public String subtitle;
     public Uri poster;
     public String artist;
-    public Double rate;
+    public double rate;
     public SubtitleOptions subtitles;
-    public Boolean autoPlayWhenReady;
-    public Boolean loopOnEnd;
-    public Boolean showControls;
+    public boolean autoPlayWhenReady;
+    public boolean loopOnEnd;
+    public boolean showControls;
     public JSObject headers;
 
-    public ExtraOptions(String title, String subtitle, Uri poster, String artist, Double rate, SubtitleOptions subtitles, Boolean autoPlayWhenReady, Boolean loopOnEnd, Boolean showControls, JSObject headers) {
+    public ExtraOptions(String title, String subtitle, Uri poster, String artist, double rate, SubtitleOptions subtitles, boolean autoPlayWhenReady, boolean loopOnEnd, boolean showControls, JSObject headers) {
         this.title = title;
         this.subtitle = subtitle;
         this.poster = poster;
