@@ -9,6 +9,7 @@ export interface MediaPlayerPlugin {
   setCurrentTime(options: MediaPlayerSetCurrentTimeOptions): Promise<MediaPlayerResult<number>>;
   isPlaying(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<boolean>>;
   isMuted(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<boolean>>;
+  setVisibilityBackgroundForPiP(options: MediaPlayerSetVisibilityBackgroundForPiPOptions): Promise<MediaPlayerResult<boolean>>;
   mute(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<boolean>>;
   getVolume(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<number>>;
   setVolume(options: MediaPlayerSetVolumeOptions): Promise<MediaPlayerResult<number>>;
@@ -53,8 +54,12 @@ export interface MediaPlayerPlugin {
     event: 'MediaPlayer:PictureInPicture',
     listener: (event: { playerId: string; isInPictureInPicture: boolean }) => void,
   ): Promise<PluginListenerHandle>;
+  addListener(
+    event: 'MediaPlayer:isPlayingInBackground',
+    listener: (event: { playerId: string; isPlayingInBackground: boolean }) => void,
+  ): Promise<PluginListenerHandle>;
 
-  removeAllListeners(playerId: string): Promise<void>;
+  removeAllListeners(options: MediaPlayerIdOptions): Promise<void>;
 }
 
 export type MediaPlayerOptions = {
@@ -81,6 +86,10 @@ export type MediaPlayerSetRateOptions = {
   playerId: string;
   rate: number;
 };
+export type MediaPlayerSetVisibilityBackgroundForPiPOptions = {
+  playerId: string;
+  isVisible: boolean;
+}
 
 export type MediaPlayerExtraOptions = {
   title?: string;
@@ -103,7 +112,9 @@ export type MediaPlayerIosOptions = {
   enableBackgroundPlay?: boolean;
   openInFullscreen?: boolean;
   automaticallyEnterPiP?: boolean;
+  automaticallyHideBackgroundForPip?: boolean;
   fullscreenOnLandscape?: boolean;
+  allowsVideoFrameAnalysis?: boolean;
   top?: number;
   left?: number;
   height?: number;

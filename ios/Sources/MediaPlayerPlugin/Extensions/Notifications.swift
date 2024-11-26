@@ -13,8 +13,7 @@ extension NSNotification.Name {
     static var mediaPlayerFullscreen: Notification.Name {return .init(rawValue: "mediaPlayerFullscreen")}
     static var mediaPlayerPictureInPicture: Notification.Name {return .init(rawValue: "mediaPlayerPictureInPicture")}
 
-    static var mediaPlayerBackground: Notification.Name {return .init(rawValue: "mediaPlayerBackground")}
-    static var mediaPlayerForeground: Notification.Name {return .init(rawValue: "mediaPlayerForeground")}
+    static var mediaPlayerIsPlayingInBackground: Notification.Name { return .init(rawValue: "isPlayingInBackground")}
 }
 
 extension MediaPlayerPlugin {
@@ -23,7 +22,6 @@ extension MediaPlayerPlugin {
         guard let info = notification.userInfo as? [String: Any] else {return}
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:Ready", data: info)
-
         }
     }
 
@@ -31,7 +29,6 @@ extension MediaPlayerPlugin {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:Play", data: info)
-
         }
     }
 
@@ -47,7 +44,6 @@ extension MediaPlayerPlugin {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:Ended", data: info)
-
         }
     }
 
@@ -55,7 +51,6 @@ extension MediaPlayerPlugin {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:Removed", data: info)
-
         }
     }
 
@@ -63,7 +58,6 @@ extension MediaPlayerPlugin {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:Seeked", data: info)
-
         }
     }
 
@@ -71,7 +65,6 @@ extension MediaPlayerPlugin {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:TimeUpdate", data: info)
-
         }
     }
 
@@ -79,7 +72,6 @@ extension MediaPlayerPlugin {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:Fullscreen", data: info)
-
         }
     }
 
@@ -87,22 +79,14 @@ extension MediaPlayerPlugin {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:PictureInPicture", data: info)
-
         }
     }
     
-    @objc func mediaPlayerBackground(notification: Notification) {
+    @objc func mediaPlayerIsPlayingInBackground(notification: Notification) {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
-            self.notifyListeners("MediaPlayer:Background", data: info)
-
+            self.notifyListeners("MediaPlayer:isPlayingInBackground", data: info)
         }
     }
-    @objc func mediaPlayerForeground(notification: Notification) {
-        guard let info = notification.userInfo as? [String: Any] else { return }
-        DispatchQueue.main.async {
-            self.notifyListeners("MediaPlayer:Foreground", data: info)
-
-        }
-    }
+    
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="white">#ffffff</color>
-    <color name="black">#000000</color>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="exo_black_opacity_60" tools:ignore="PrivateResource">#CC000000</color>
 </resources>

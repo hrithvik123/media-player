@@ -9,13 +9,12 @@ extension MediaPlayerPlugin {
         NotificationCenter.default.removeObserver(mediaPlayerPauseObserver!)
         NotificationCenter.default.removeObserver(mediaPlayerEndedObserver!)
         NotificationCenter.default.removeObserver(mediaPlayerReadyObserver!)
+        NotificationCenter.default.removeObserver(mediaPlayerSeekedObserver!)
         NotificationCenter.default.removeObserver(mediaPlayerTimeUpdateObserver!)
         
         NotificationCenter.default.removeObserver(mediaPlayerFullscreenObserver!)
         NotificationCenter.default.removeObserver(mediaPlayerPictureInPictureObserver!)
-        NotificationCenter.default.removeObserver(mediaPlayerBackgroundObserver!)
-        NotificationCenter.default.removeObserver(mediaPlayerForegroundObserver!)
-        NotificationCenter.default.removeObserver(mediaPlayerSeekedObserver!)
+        NotificationCenter.default.removeObserver(mediaPlayerIsPlayingInBackgroundObserver!)
     }
 
     @objc func addNotificationCenterObservers() {
@@ -35,6 +34,10 @@ extension MediaPlayerPlugin {
             .addObserver(forName: .mediaPlayerEnded, object: nil, queue: nil,
                         using: mediaPlayerEnded)
         
+        mediaPlayerSeekedObserver = NotificationCenter.default
+            .addObserver(forName: .mediaPlayerSeeked, object: nil, queue: nil,
+                         using: mediaPlayerSeeked)
+        
         mediaPlayerTimeUpdateObserver = NotificationCenter.default
             .addObserver(forName: .mediaPlayerTimeUpdate, object: nil, queue: nil,
                          using: mediaPlayerTimeUpdate)
@@ -47,17 +50,11 @@ extension MediaPlayerPlugin {
             .addObserver(forName: .mediaPlayerPictureInPicture, object: nil, queue: nil,
                          using: mediaPlayerPictureInPicture)
         
-        mediaPlayerBackgroundObserver = NotificationCenter.default
-            .addObserver(forName: .mediaPlayerBackground, object: nil, queue: nil,
-                         using: mediaPlayerBackground)
+        mediaPlayerIsPlayingInBackgroundObserver = NotificationCenter.default
+            .addObserver(forName: .mediaPlayerIsPlayingInBackground, object: nil, queue: nil,
+                         using: mediaPlayerIsPlayingInBackground)
         
-        mediaPlayerForegroundObserver = NotificationCenter.default
-            .addObserver(forName: .mediaPlayerForeground, object: nil, queue: nil,
-                         using: mediaPlayerForeground)
-
-        mediaPlayerSeekedObserver = NotificationCenter.default
-            .addObserver(forName: .mediaPlayerSeeked, object: nil, queue: nil,
-                         using: mediaPlayerSeeked)
+        
     }
 
 }

@@ -5,19 +5,23 @@ import UIKit
 extension MediaPlayerView: AVPlayerViewControllerDelegate {
     
     public func playerViewControllerWillStartPictureInPicture(_ playerViewController: AVPlayerViewController) {
-        
+        if self.ios.automaticallyHideBackgroundForPip == true {
+            self.isHidden = true
+        }
     }
 
     public func playerViewControllerWillStopPictureInPicture(_ playerViewController: AVPlayerViewController) {
-        
+        if self.ios.automaticallyHideBackgroundForPip == true {
+            self.isHidden = false
+        }
     }
-
-    public func playerViewController(_ playerViewController: AVPlayerViewController, failedToStartPictureInPictureWithError error: Error) {
-        
+    
+    public func playerViewControllerRestoreUserInterfaceForPictureInPictureStop(_ playerViewController: AVPlayerViewController) {
+        self.isHidden = false
     }
     
     public func playerViewControllerDidStartPictureInPicture(_ playerViewController: AVPlayerViewController){
-         self.isInPipMode = true
+        self.isInPipMode = true
         NotificationCenter.default.post(name: .mediaPlayerPictureInPicture, object: nil, userInfo: ["playerId": self.playerId, "isInPictureInPicture": true])
     }
     

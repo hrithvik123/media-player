@@ -3,7 +3,7 @@ import MediaPlayer
 extension MediaPlayerView {
 
     func setNowPlayingImage() {
-        if let artwork = self.extra?.poster {
+        if let artwork = self.extra.poster {
             let session = URLSession(configuration: .default)
             let task = session.dataTask(with: artwork) { (data, response, error) in
                 guard let imageData = data, error == nil else {
@@ -26,10 +26,10 @@ extension MediaPlayerView {
     func setNowPlayingInfo() {
         var nowPlayingInfo = [String: Any]()
 
-        if let title = self.extra?.title {
+        if let title = self.extra.title {
             nowPlayingInfo[MPMediaItemPropertyTitle] = title
         }
-        if let subtitle = self.extra?.subtitle {
+        if let subtitle = self.extra.subtitle {
             nowPlayingInfo[MPMediaItemPropertyArtist] = subtitle
         }
 

@@ -39,6 +39,7 @@ public class FragmentHelpers {
             layout.removeView(playerView);
             layout.setVisibility(View.GONE);
             ViewGroup newLayout = ((ViewGroup) bridge.getWebView().getParent()).findViewWithTag("VIDEO_ONLY");
+            newLayout.animate();
             newLayout.addView(playerView);
             newLayout.setVisibility(View.VISIBLE);
             newLayout.bringToFront();
@@ -47,6 +48,7 @@ public class FragmentHelpers {
             ViewGroup videoOnlyLayout = (ViewGroup) playerView.getParent();
             videoOnlyLayout.removeView(playerView);
             videoOnlyLayout.setVisibility(View.GONE);
+            layout.animate();
             layout.addView(playerView);
             layout.setVisibility(View.VISIBLE);
             layout.bringToFront();

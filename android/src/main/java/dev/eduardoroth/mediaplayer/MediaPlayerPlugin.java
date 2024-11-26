@@ -329,6 +329,16 @@ public class MediaPlayerPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void setVisibilityBackgroundForPiP(final PluginCall call){
+        JSObject ret = new JSObject();
+        ret.put("method", "setVisibilityBackgroundForPiP");
+        ret.put("result", false);
+        ret.put("message", "Method setVisibilityBackgroundForPiP not implemented for Android");
+        call.resolve(ret);
+        return;
+    }
+
+    @PluginMethod
     public void mute(final PluginCall call) {
         String playerId = call.getString("playerId");
         if (playerId == null) {
@@ -569,6 +579,16 @@ public class MediaPlayerPlugin extends Plugin {
                         data.put("playerId", this.getInfo().get("playerId"));
                         data.put("isInPictureInPicture", this.getInfo().get("isInPictureInPicture"));
                         notifyListeners("MediaPlayer:PictureInPicture", data);
+                    }
+                });
+        NotificationHelpers.defaultCenter()
+                .addMethodForNotification("MediaPlayer:isPlayingInBackground", new RunnableHelper() {
+                    @Override
+                    public void run() {
+                        JSObject data = new JSObject();
+                        data.put("playerId", this.getInfo().get("playerId"));
+                        data.put("isPlayingInBackground", this.getInfo().get("isPlayingInBackground"));
+                        notifyListeners("MediaPlayer:isPlayingInBackground", data);
                     }
                 });
     }

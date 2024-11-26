@@ -9,6 +9,7 @@ import type {
   MediaPlayerResult,
   MediaPlayerSetCurrentTimeOptions,
   MediaPlayerSetRateOptions,
+  MediaPlayerSetVisibilityBackgroundForPiPOptions,
   MediaPlayerSetVolumeOptions,
 } from './definitions';
 
@@ -49,7 +50,7 @@ export class MediaPlayerWeb extends WebPlugin implements MediaPlayerPlugin {
       });
       this.createPlayerListeners(playerId, player);
       this._players.set(playerId, player);
-      if(options.extra?.autoPlayWhenReady == true){
+      if (options.extra?.autoPlayWhenReady == true) {
         player.play();
       }
       return {
@@ -263,6 +264,16 @@ export class MediaPlayerWeb extends WebPlugin implements MediaPlayerPlugin {
       method: 'isMuted',
       result: false,
       message: 'Player not found',
+    };
+  }
+
+  async setVisibilityBackgroundForPiP(
+    options: MediaPlayerSetVisibilityBackgroundForPiPOptions,
+  ): Promise<MediaPlayerResult<boolean>> {
+    return {
+      method: 'setVisibilityBackgroundForPiP',
+      result: false,
+      message: `Method not implemented for Web ${options.playerId}`,
     };
   }
 

@@ -9,7 +9,7 @@ extension MediaPlayerView {
             object: nil,
             queue: nil
         ){(_) in
-            if self.ios?.fullscreenOnLandscape == true {
+            if self.ios.fullscreenOnLandscape == true {
                 if UIDevice.current.orientation.isLandscape {
                     self.videoPlayer.enterFullScreen(animated: true)
                 } else {
@@ -23,8 +23,9 @@ extension MediaPlayerView {
             object: nil,
             queue: nil
         ){(_) in
-            if self.ios?.enableBackgroundPlay == true {
+            if self.ios.enableBackgroundPlay == true {
                 self.isInBackgroundMode = true
+                NotificationCenter.default.post(name: .mediaPlayerIsPlayingInBackground, object: nil, userInfo: ["playerId": self.playerId, "isPlayingInBackground": self.isInBackgroundMode])
                 if self.isInPipMode != true {
                     self.videoPlayer.player = nil
                 }
@@ -38,8 +39,9 @@ extension MediaPlayerView {
             object: nil,
             queue: OperationQueue.main
         ) { (_) in
-            if self.ios?.enableBackgroundPlay == true {
+            if self.ios.enableBackgroundPlay == true {
                 self.isInBackgroundMode = false
+                NotificationCenter.default.post(name: .mediaPlayerIsPlayingInBackground, object: nil, userInfo: ["playerId": self.playerId, "isPlayingInBackground": self.isInBackgroundMode])
                 if self.isInPipMode != true {
                     self.videoPlayer.player = self.player
                 }
@@ -60,7 +62,7 @@ extension MediaPlayerView {
                         self.setNowPlayingImage()
                         self.setRemoteCommandCenter()
                         NotificationCenter.default.post(name: .mediaPlayerReady, object: nil, userInfo: ["playerId": self.playerId, "currentTime": self.currentTime, "videoRate": self.rate])
-                        if self.extra?.autoPlayWhenReady == true {
+                        if self.extra.autoPlayWhenReady == true {
                             player.play();
                         }
                     case .failed, .unknown:
@@ -129,7 +131,7 @@ extension MediaPlayerView {
                         if !self.isVideoEnd && abs(self.currentTime - self.duration) < 0.2 {
                             player.seek(to: CMTime.zero)
                             self.currentTime = 0
-                            if self.extra?.loopOnEnd == true {
+                            if self.extra.loopOnEnd == true {
                                 self.videoPlayer.player?.play()
                                 NotificationCenter.default.post(
                                     name: .mediaPlayerPlay,

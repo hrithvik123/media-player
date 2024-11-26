@@ -12,13 +12,10 @@ import android.app.PictureInPictureParams;
 import android.app.UiModeManager;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.hardware.SensorManager;
 import android.media.MediaCodec;
 import android.net.Uri;
 import android.os.Build;
@@ -26,22 +23,21 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.Rational;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.app.PictureInPictureModeChangedInfo;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.util.Consumer;
 import androidx.fragment.app.Fragment;
 import androidx.media3.cast.CastPlayer;
@@ -120,20 +116,26 @@ public class MediaPlayerFragment extends Fragment {
      * Picture in Picture
      */
     private final boolean canUsePiP;
-    private Boolean isInPipMode = false;
+    private boolean isInPipMode = false;
+
+    /**
+     * Fullscreen Mode
+     */
+    private boolean isInFullscreen = false;
 
     /**
      * Listeners
      */
     private final Handler handler = new Handler();
     private Player.Listener localListener;
-    private PlayerView.FullscreenButtonClickListener fullscreenButtonClickListener;
     private View.OnKeyListener onKeyListener;
     private Consumer<PictureInPictureModeChangedInfo> onPictureInPictureModeChangedListener;
     private OnBackPressedCallback onBackPressedCallback;
-    private PlayerView.ControllerVisibilityListener controllerVisibilityListener;
     private View.OnClickListener pipButtonClickListener;
+    private View.OnClickListener toggleFullscreenButtonClickListener;
     private OrientationEventListener orientationEventListener;
+    private PlayerView.ControllerVisibilityListener controllerVisibilityListener;
+
     /**
      * Chromecast
      */
@@ -170,6 +172,7 @@ public class MediaPlayerFragment extends Fragment {
     private LinearLayout rightButtons;
     private MediaRouteButton castButton;
     private ImageButton pipButton;
+    private ImageButton fullscreenToggle;
 
     public MediaPlayerFragment(FragmentHelpers fragmentHelpers, Context context, CastContext castContext, int layoutId, String playerId, Uri url, AndroidOptions android, ExtraOptions extra, WebView webView) {
         this.fragmentHelpers = fragmentHelpers;
@@ -211,10 +214,14 @@ public class MediaPlayerFragment extends Fragment {
             addChromecastListeners();
         }
         addActivityListeners();
+        addOrientationListener();
         addPlayerListeners();
         setCurrentPlayer(castPlayer != null && castPlayer.isCastSessionAvailable() ? castPlayer : localPlayer);
         if (savedInstanceState != null) {
             player.seekTo(savedInstanceState.getInt(PLAYBACK_TIME));
+        }
+        if(android.openInFullscreen){
+            setFullscreenMode(true);
         }
     }
 
@@ -228,12 +235,19 @@ public class MediaPlayerFragment extends Fragment {
 
     private void createPlayerView() {
         playerView = mainView.findViewById(R.id.videoViewId);
+
         ImageButton repeatToggle = playerView.findViewById(androidx.media3.ui.R.id.exo_repeat_toggle);
         repeatToggle.setVisibility(View.GONE);
 
+        playerView.findViewById(androidx.media3.ui.R.id.exo_fullscreen).setVisibility(View.GONE);
+        playerView.findViewById(androidx.media3.ui.R.id.exo_minimal_fullscreen).setVisibility(View.GONE);
+
+        
         rightButtons = playerView.findViewById(R.id.right_buttons);
+
         castButton = rightButtons.findViewById(R.id.cast_button);
         pipButton = rightButtons.findViewById(R.id.pip_button);
+        fullscreenToggle = rightButtons.findViewById(R.id.toggle_fullscreen);
 
         if (!android.enableChromecast) {
             castButton.setVisibility(View.GONE);
@@ -242,18 +256,25 @@ public class MediaPlayerFragment extends Fragment {
             pipButton.setVisibility(View.GONE);
         }
 
-        playerView.setControllerAutoShow(false);
         playerView.setShowSubtitleButton(subtitlesHelpers.hasSubtitles());
+        playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS);
+        playerView.setControllerAutoShow(false);
         playerView.setControllerHideOnTouch(true);
-        playerView.setControllerShowTimeoutMs(3500);
+        playerView.setControllerShowTimeoutMs(2500);
         if (artwork != null) {
             playerView.setDefaultArtwork(artwork);
             playerView.setArtworkDisplayMode(PlayerView.ARTWORK_DISPLAY_MODE_FILL);
         }
         playerView.setShowPreviousButton(false);
         playerView.setShowNextButton(false);
+
         playerView.setUseController(extra.showControls);
+        playerView.setControllerAnimationEnabled(extra.showControls);
+        playerView.setImageDisplayMode(PlayerView.IMAGE_DISPLAY_MODE_FIT);
+        playerView.setShowPlayButtonIfPlaybackIsSuppressed(true);
+
         mainView.setFocusableInTouchMode(true);
+
     }
 
     private void createPlayer() {
@@ -327,22 +348,11 @@ public class MediaPlayerFragment extends Fragment {
     private void setupChromeCast() {
         if (castContext != null) {
             castPlayer = new CastPlayer(castContext);
+
             CastButtonFactory.setUpMediaRouteButton(context, castButton);
 
-            Context castThemedContext = new ContextThemeWrapper(context, androidx.mediarouter.R.style.Theme_MediaRouter);
-            TypedArray a = castThemedContext.obtainStyledAttributes(
-                    null,
-                    androidx.mediarouter.R.styleable.MediaRouteButton,
-                    androidx.mediarouter.R.attr.mediaRouteButtonStyle,
-                    0
-            );
-            Drawable drawable = a.getDrawable(androidx.mediarouter.R.styleable.MediaRouteButton_externalRouteEnabledDrawable);
-            a.recycle();
-            assert drawable != null;
-            DrawableCompat.setTint(drawable, context.getColor(R.color.white));
-            drawable.setState(castButton.getDrawableState());
-            castButton.setRemoteIndicatorDrawable(drawable);
             if (castContext.getCastState() != CastState.NO_DEVICES_AVAILABLE) {
+                castButton.setEnabled(true);
                 castButton.setVisibility(View.VISIBLE);
             } else {
                 castButton.setVisibility(View.GONE);
@@ -362,7 +372,6 @@ public class MediaPlayerFragment extends Fragment {
     }
 
     private void addPlayerListeners() {
-        Fragment fragment = this;
         localListener = new Player.Listener() {
             @Override
             public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, int reason) {
@@ -413,7 +422,7 @@ public class MediaPlayerFragment extends Fragment {
                         break;
                     case Player.STATE_READY:
                         NotificationHelpers.defaultCenter().postNotification("MediaPlayer:Ready", info);
-                        if (extra.autoPlayWhenReady == true) {
+                        if (extra.autoPlayWhenReady) {
                             player.play();
                         }
                         break;
@@ -462,25 +471,21 @@ public class MediaPlayerFragment extends Fragment {
             }
             return true;
         };
-        int defaultOrientation = requireActivity().getRequestedOrientation();
-        fullscreenButtonClickListener = isFullScreen -> {
-            setFullscreenMode(isFullScreen, defaultOrientation);
-        };
-        controllerVisibilityListener = visibility -> {
-            rightButtons.setVisibility(visibility);
-        };
         pipButtonClickListener = view -> {
             startPictureInPicture();
         };
+        toggleFullscreenButtonClickListener = view -> {
+            setFullscreenMode(!isInFullscreen);
+        };
+        controllerVisibilityListener = visibility -> rightButtons.setVisibility(visibility);
 
         if (canUsePiP) {
             pipButton.setOnClickListener(pipButtonClickListener);
         }
-
+        fullscreenToggle.setOnClickListener(toggleFullscreenButtonClickListener);
         player.addListener(localListener);
         playerView.setControllerVisibilityListener(controllerVisibilityListener);
         playerView.setOnKeyListener(onKeyListener);
-        playerView.setFullscreenButtonClickListener(fullscreenButtonClickListener);
     }
 
     private void removePlayerListeners() {
@@ -489,8 +494,9 @@ public class MediaPlayerFragment extends Fragment {
         playerView.setOnKeyListener(null);
         playerView.setFullscreenButtonClickListener(null);
         if (canUsePiP) {
-            pipButton.setOnClickListener(pipButtonClickListener);
+            pipButton.setOnClickListener(null);
         }
+        fullscreenToggle.setOnClickListener(null);
     }
 
     private void addActivityListeners() {
@@ -507,13 +513,12 @@ public class MediaPlayerFragment extends Fragment {
                     pipButton.setVisibility(View.GONE);
                     fragmentHelpers.updateFragmentLayout(fragment, true);
                     playerView.setUseController(false);
-                    playerView.setControllerAutoShow(false);
                 } else {
                     pipButton.setVisibility(View.VISIBLE);
                     fragmentHelpers.updateFragmentLayout(fragment, false);
                     playerView.setUseController(true);
-                    playerView.setControllerAutoShow(true);
                 }
+                playerView.setControllerAutoShow(false);
             }
         };
         onBackPressedCallback = new OnBackPressedCallback(true) {
@@ -522,33 +527,42 @@ public class MediaPlayerFragment extends Fragment {
                 if (player.isPlaying() && android.automaticallyEnterPiP) {
                     startPictureInPicture();
                 }
-                // This may affect default handlers on apps that don't implement it.
-                /*else {
-                    if (webView.canGoBack()) {
-                        webView.goBack();
-                    }
-                }*/
             }
         };
-        /*orientationEventListener = new OrientationEventListener(context, SensorManager.SENSOR_DELAY_UI) {
-            @Override
-            public void onOrientationChanged(int orientation) {
-                if (android.fullscreenOnLandscape) {
-                    if (orientation >= (90 - 50) && orientation <= (90 + 50)) {
-                        setFullscreenMode(true);
-                    } else {
-                        setFullscreenMode(false);
-                    }
-                }
-            }
-        };
-        orientationEventListener.enable();*/
+
         requireActivity().addOnPictureInPictureModeChangedListener(onPictureInPictureModeChangedListener);
         requireActivity().getOnBackPressedDispatcher().addCallback(requireActivity(), onBackPressedCallback);
     }
 
+    private void addOrientationListener(){
+        orientationEventListener = new OrientationEventListener(context) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                if (android.fullscreenOnLandscape) {
+                    // portrait
+                    if((orientation >= 0 && orientation < 90) || (orientation >= 180 && orientation < 270)){
+                        if(isInFullscreen) {
+                            setFullscreenMode(false);
+                        }
+                    } else {
+                        if(!isInFullscreen) {
+                            setFullscreenMode(true);
+                        }
+                    }
+                }
+            }
+        };
+        if(orientationEventListener.canDetectOrientation()){
+            orientationEventListener.enable();
+        }
+    }
+
+    private void removeOrientationListener(){
+        orientationEventListener.disable();
+    }
+
     private void removeActivityListeners() {
-        //orientationEventListener.disable();
+        orientationEventListener.disable();
         requireActivity().removeOnPictureInPictureModeChangedListener(onPictureInPictureModeChangedListener);
         onBackPressedCallback.setEnabled(false);
     }
@@ -634,6 +648,7 @@ public class MediaPlayerFragment extends Fragment {
                 subtitlesHelpers.setSubtitle(true);
 
             requireActivity().enterPictureInPictureMode(pictureInPictureParams.build());
+
             isInPipMode = requireActivity().isInPictureInPictureMode();
         }
     }
@@ -732,29 +747,20 @@ public class MediaPlayerFragment extends Fragment {
         return false;
     }
 
-    private void setFullscreenMode(boolean isFullScreen, int defaultOrientation){
+    private void setFullscreenMode(boolean isFullScreen){
         HashMap<String, Object> info = new HashMap<String, Object>();
         info.put("playerId", playerId);
         info.put("isInFullScreen", isFullScreen);
+        isInFullscreen = isFullScreen;
+        fullscreenToggle.setImageResource(isFullScreen ? R.drawable.ic_fullscreen_exit : R.drawable.ic_fullscreen_enter);
         NotificationHelpers.defaultCenter().postNotification("MediaPlayer:Fullscreen", info);
         fragmentHelpers.updateFragmentLayout(this, isFullScreen);
-        if (isFullScreen) {
-            requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
-            requireActivity().getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            );
-        } else {
-            requireActivity().setRequestedOrientation(defaultOrientation);
-            requireActivity().getWindow()
-                    .setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                            WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        }
     }
 
     private void clearMediaPlayer() {
         removePlayerListeners();
         removeActivityListeners();
+        removeOrientationListener();
         removeChromecastListeners();
         if (castPlayer != null) {
             castPlayer.setSessionAvailabilityListener(null);
@@ -806,6 +812,10 @@ public class MediaPlayerFragment extends Fragment {
         boolean isAppBackground = false;
         if (android.enableBackgroundPlay) {
             isAppBackground = isApplicationSentToBackground();
+            HashMap<String, Object> info = new HashMap<String, Object>();
+            info.put("playerId", playerId);
+            info.put("isPlayingInBackground", isAppBackground);
+            NotificationHelpers.defaultCenter().postNotification("MediaPlayer:isPlayingInBackground", info);
         }
         if (isInPipMode) {
             requireActivity().finishAndRemoveTask();
@@ -821,6 +831,10 @@ public class MediaPlayerFragment extends Fragment {
         boolean isAppBackground = false;
         if (android.enableBackgroundPlay) {
             isAppBackground = isApplicationSentToBackground();
+            HashMap<String, Object> info = new HashMap<String, Object>();
+            info.put("playerId", playerId);
+            info.put("isPlayingInBackground", isAppBackground);
+            NotificationHelpers.defaultCenter().postNotification("MediaPlayer:isPlayingInBackground", info);
         }
 
         if (!isInPipMode) {
@@ -852,6 +866,10 @@ public class MediaPlayerFragment extends Fragment {
             /*if ((Util.SDK_INT < 24 || player == null)) {
                 initializePlayer();
             }*/
+            HashMap<String, Object> info = new HashMap<String, Object>();
+            info.put("playerId", playerId);
+            info.put("isPlayingInBackground", isApplicationSentToBackground());
+            NotificationHelpers.defaultCenter().postNotification("MediaPlayer:isPlayingInBackground", info);
         } else {
             isInPipMode = false;
             if (

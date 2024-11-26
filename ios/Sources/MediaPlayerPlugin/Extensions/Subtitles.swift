@@ -5,7 +5,7 @@ extension MediaPlayerView {
  
     func setSubtitles() {
         
-        if var subTitleUrl = self.extra?.subtitles?.url {
+        if var subTitleUrl = self.extra.subtitles?.url {
             var stUrl: URL?
             //check if subtitle is .srt
             if subTitleUrl.pathExtension == "srt" {
@@ -13,7 +13,7 @@ extension MediaPlayerView {
                 subTitleUrl = vttUrl
             }
             var textStyle: [AVTextStyleRule] = []
-            if let opt = self.extra?.subtitles?.settings {
+            if let opt = self.extra.subtitles?.settings {
                 textStyle.append(contentsOf: self.setSubTitleStyle(options: opt))
             }
 

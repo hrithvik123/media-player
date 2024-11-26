@@ -29,6 +29,7 @@ npx cap sync
 * [`setCurrentTime(...)`](#setcurrenttime)
 * [`isPlaying(...)`](#isplaying)
 * [`isMuted(...)`](#ismuted)
+* [`setVisibilityBackgroundForPiP(...)`](#setvisibilitybackgroundforpip)
 * [`mute(...)`](#mute)
 * [`getVolume(...)`](#getvolume)
 * [`setVolume(...)`](#setvolume)
@@ -45,6 +46,7 @@ npx cap sync
 * [`addListener('MediaPlayer:TimeUpdate', ...)`](#addlistenermediaplayertimeupdate-)
 * [`addListener('MediaPlayer:FullScreen', ...)`](#addlistenermediaplayerfullscreen-)
 * [`addListener('MediaPlayer:PictureInPicture', ...)`](#addlistenermediaplayerpictureinpicture-)
+* [`addListener('MediaPlayer:isPlayingInBackground', ...)`](#addlistenermediaplayerisplayinginbackground-)
 * [`removeAllListeners(...)`](#removealllisteners)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
@@ -168,6 +170,21 @@ isMuted(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<boolean>>
 | Param         | Type                                                                  |
 | ------------- | --------------------------------------------------------------------- |
 | **`options`** | <code><a href="#mediaplayeridoptions">MediaPlayerIdOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;boolean&gt;&gt;</code>
+
+--------------------
+
+
+### setVisibilityBackgroundForPiP(...)
+
+```typescript
+setVisibilityBackgroundForPiP(options: MediaPlayerSetVisibilityBackgroundForPiPOptions) => Promise<MediaPlayerResult<boolean>>
+```
+
+| Param         | Type                                                                                                                        |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code><a href="#mediaplayersetvisibilitybackgroundforpipoptions">MediaPlayerSetVisibilityBackgroundForPiPOptions</a></code> |
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;boolean&gt;&gt;</code>
 
@@ -419,15 +436,31 @@ addListener(event: 'MediaPlayer:PictureInPicture', listener: (event: { playerId:
 --------------------
 
 
+### addListener('MediaPlayer:isPlayingInBackground', ...)
+
+```typescript
+addListener(event: 'MediaPlayer:isPlayingInBackground', listener: (event: { playerId: string; isPlayingInBackground: boolean; }) => void) => Promise<PluginListenerHandle>
+```
+
+| Param          | Type                                                                                   |
+| -------------- | -------------------------------------------------------------------------------------- |
+| **`event`**    | <code>'MediaPlayer:isPlayingInBackground'</code>                                       |
+| **`listener`** | <code>(event: { playerId: string; isPlayingInBackground: boolean; }) =&gt; void</code> |
+
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
+
+--------------------
+
+
 ### removeAllListeners(...)
 
 ```typescript
-removeAllListeners(playerId: string) => Promise<void>
+removeAllListeners(options: MediaPlayerIdOptions) => Promise<void>
 ```
 
-| Param          | Type                |
-| -------------- | ------------------- |
-| **`playerId`** | <code>string</code> |
+| Param         | Type                                                                  |
+| ------------- | --------------------------------------------------------------------- |
+| **`options`** | <code><a href="#mediaplayeridoptions">MediaPlayerIdOptions</a></code> |
 
 --------------------
 
@@ -466,7 +499,7 @@ removeAllListeners(playerId: string) => Promise<void>
 
 #### MediaPlayerIosOptions
 
-<code>{ enableExternalPlayback?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; top?: number; left?: number; height?: number; width?: number; }</code>
+<code>{ enableExternalPlayback?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; automaticallyHideBackgroundForPip?: boolean; fullscreenOnLandscape?: boolean; allowsVideoFrameAnalysis?: boolean; top?: number; left?: number; height?: number; width?: number; }</code>
 
 
 #### MediaPlayerAndroidOptions
@@ -497,6 +530,11 @@ removeAllListeners(playerId: string) => Promise<void>
 #### MediaPlayerSetCurrentTimeOptions
 
 <code>{ playerId: string; time: number; }</code>
+
+
+#### MediaPlayerSetVisibilityBackgroundForPiPOptions
+
+<code>{ playerId: string; isVisible: boolean; }</code>
 
 
 #### MediaPlayerSetVolumeOptions

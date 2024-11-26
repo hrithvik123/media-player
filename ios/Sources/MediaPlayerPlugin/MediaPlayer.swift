@@ -20,17 +20,20 @@ import AVKit
         extra: MediaPlayerExtraOptions
     ) {
         DispatchQueue.main.sync {
-            if let existingPlayer = getPlayer(playerId: playerId) {
-                existingPlayer.releasePlayer()
-                removePlayer(playerId: playerId)
+            guard getPlayer(playerId: playerId) == nil else {
+                call.resolve(["result": false, "method": "create", "message": "Player with playerId \(playerId) is already created"])
+                return
             }
             let mediaPlayerView = MediaPlayerView(
                 playerId: playerId, url: url, ios: ios, extra: extra
             )
             self.bridge?.webView?.superview?.addSubview(mediaPlayerView)
+
+            //self.bridge?.webView?.inputView?.scrollView.delegate = mediaPlayerView
+            //self.bridge?.webView?.scrollView.delegate = mediaPlayerView
             self.addPlayers(playerId: playerId, player: mediaPlayerView)
+            call.resolve(["result": true, "method": "create", "value": playerId]);
         }
-        call.resolve(["result": true, "method": "create", "value": playerId]);
     }
 
     @objc func play(call: CAPPluginCall, playerId: String) {
@@ -89,6 +92,18 @@ import AVKit
             return
         }
         call.resolve(["result": true, "method": "isMuted", "value": player.player!.isMuted])
+    }
+    @objc func setVisibilityBackgroundForPiP(call: CAPPluginCall, playerId: String, isVisible: Bool){
+        guard let player = getPlayer(playerId: playerId) else {
+            call.resolve(["result": false, "method": "setVisibilityBackgroundForPiP", "message": "Player with playerId \(playerId) not found"])
+            return
+        }
+        DispatchQueue.main.sync {
+            if player.isInPipMode == true {
+                player.isHidden = !isVisible
+            }
+            call.resolve(["result": true, "method": "setVisibilityBackgroundForPiP", "value": player.isHidden])
+        }
     }
     @objc func mute(call: CAPPluginCall, playerId: String) {
         guard let player = getPlayer(playerId: playerId) else {

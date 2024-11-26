@@ -6,8 +6,8 @@ open class MediaPlayerView: UIView {
     var playerId: String
     var url: URL
 
-    var ios: MediaPlayerIosOptions?
-    var extra: MediaPlayerExtraOptions?
+    var ios: MediaPlayerIosOptions
+    var extra: MediaPlayerExtraOptions
 
     var isPIPModeAvailable: Bool = false
     var isInBackgroundMode: Bool = false
@@ -56,8 +56,8 @@ open class MediaPlayerView: UIView {
         
         videoPlayer = AVPlayerViewController()
 
-        if(self.extra?.headers != nil){
-            videoAsset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": self.extra?.headers])
+        if(self.extra.headers != nil){
+            videoAsset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": self.extra.headers])
         } else {
             videoAsset = AVURLAsset(url: url)
         }
@@ -66,16 +66,21 @@ open class MediaPlayerView: UIView {
         self.clipsToBounds = true
         self.contentMode = .scaleAspectFit
         videoPlayer.delegate = self
+        videoPlayer.updatesNowPlayingInfoCenter = false
         videoPlayer.view.frame = self.bounds
 
-        if(self.extra?.subtitles != nil) {
+        if(self.extra.subtitles != nil) {
             setSubtitles()
         } else {
             self.playerItem = AVPlayerItem(asset: self.videoAsset)
         }
         player = AVPlayer(playerItem: playerItem)
-
-        videoPlayer.showsPlaybackControls = self.extra?.showControls == true
+        
+        if #available (iOS 16.0, *) {
+            videoPlayer.allowsVideoFrameAnalysis = ios.allowsVideoFrameAnalysis
+        }
+        
+        videoPlayer.showsPlaybackControls = self.extra.showControls == true
 
         if (UIDevice.current.userInterfaceIdiom == UIUserInterfaceIdiom.pad),
            #available(iOS 13.0, *) {
@@ -84,18 +89,18 @@ open class MediaPlayerView: UIView {
             isPIPModeAvailable = true
         }
         if #available(iOS 14.2, *) {
-            if(self.ios?.automaticallyEnterPiP == true) {
+            if(self.ios.automaticallyEnterPiP == true) {
                 videoPlayer.canStartPictureInPictureAutomaticallyFromInline = true
             } else {
                 videoPlayer.canStartPictureInPictureAutomaticallyFromInline = false
             }
         }
-        videoPlayer.allowsPictureInPicturePlayback = (isPIPModeAvailable && self.ios?.enablePiP == true)
+        videoPlayer.allowsPictureInPicturePlayback = (isPIPModeAvailable && self.ios.enablePiP == true)
         videoPlayer.player = player
 
         self.addObservers()
         
-        if self.ios?.openInFullscreen == true {
+        if self.ios.openInFullscreen == true {
             videoPlayer.enterFullScreen(animated: true)
         }
         

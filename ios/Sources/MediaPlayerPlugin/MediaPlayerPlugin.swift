@@ -5,6 +5,7 @@ import AVKit
 
 @objc(MediaPlayerPlugin)
 public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
+    
     public let identifier = "MediaPlayerPlugin"
     public let jsName = "MediaPlayer"
 
@@ -17,6 +18,7 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setCurrentTime", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "isPlaying", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "isMuted", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setVisibilityBackgroundForPiP", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "mute", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getVolume", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setVolume", returnType: CAPPluginReturnPromise),
@@ -31,12 +33,11 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     var mediaPlayerPauseObserver: Any?;
     var mediaPlayerEndedObserver: Any?;
     var mediaPlayerReadyObserver: Any?;
+    var mediaPlayerSeekedObserver: Any?
     var mediaPlayerTimeUpdateObserver: Any?
     var mediaPlayerFullscreenObserver: Any?
     var mediaPlayerPictureInPictureObserver: Any?
-    var mediaPlayerBackgroundObserver: Any?
-    var mediaPlayerForegroundObserver: Any?
-    var mediaPlayerSeekedObserver: Any?
+    var mediaPlayerIsPlayingInBackgroundObserver: Any?
 
     override public func load() {
         addNotificationCenterObservers();
@@ -78,7 +79,7 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
         let subtitleOptions = extraOptions["subtitles"] as? [String: Any] ?? nil
         
         let ios = MediaPlayerIosOptions(
-            enableExternalPlayback: iosOptions["enableExternalPlayback"] as? Bool, enablePiP: iosOptions["enablePiP"] as? Bool, enableBackgroundPlay: iosOptions["enableBackgroundPlay"] as? Bool, openInFullscreen: iosOptions["openInFullscreen"] as? Bool, automaticallyEnterPiP: iosOptions["automaticallyEnterPiP"] as? Bool, top: iosOptions["top"] as? Float, left: iosOptions["left"] as? Float, height: iosOptions["height"] as? Float, width: iosOptions["width"] as? Float, fullscreenOnLandscape: iosOptions["fullscreenOnLandscape"] as? Bool
+            enableExternalPlayback: iosOptions["enableExternalPlayback"] as? Bool, enablePiP: iosOptions["enablePiP"] as? Bool, enableBackgroundPlay: iosOptions["enableBackgroundPlay"] as? Bool, openInFullscreen: iosOptions["openInFullscreen"] as? Bool, automaticallyEnterPiP: iosOptions["automaticallyEnterPiP"] as? Bool, automaticallyHideBackgroundForPip: iosOptions["automaticallyHideBackgroundForPip"] as? Bool, top: iosOptions["top"] as? Float, left: iosOptions["left"] as? Float, height: iosOptions["height"] as? Float, width: iosOptions["width"] as? Float, fullscreenOnLandscape: iosOptions["fullscreenOnLandscape"] as? Bool, allowsVideoFrameAnalysis: iosOptions["allowsVideoFrameAnalysis"] as? Bool
         )
                         
         var subTitle: URL?
@@ -192,6 +193,22 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         implementation.isMuted(call: call, playerId: playerId)
+    }
+    
+    @objc func setVisibilityBackgroundForPiP(_ call: CAPPluginCall) {
+        guard let playerId = call.getString("playerId") else {
+            let error: String = "Must provide a playerId"
+            print(error);
+            call.resolve(["result": false, "method": "setVisibilityBackgroundForPiP", "message": error]);
+            return
+        }
+        guard let isVisible = call.getBool("isVisible") else {
+            let error: String = "Must provide isVisible"
+            print(error);
+            call.resolve(["result": false, "method": "setVisibilityBackgroundForPiP", "message": error]);
+            return
+        }
+        implementation.setVisibilityBackgroundForPiP(call: call, playerId: playerId, isVisible: isVisible)
     }
 
     @objc func mute(_ call: CAPPluginCall) {

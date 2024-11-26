@@ -47,6 +47,7 @@ public class MediaPlayer {
                         videoLayout.setLayoutParams(params);
                         videoLayout.setBackgroundColor(context.getColor(R.color.black));
                         videoLayout.setVisibility(View.GONE);
+
                         ((ViewGroup) bridge.getWebView().getParent()).addView(videoLayout);
                     }
                 }
@@ -59,6 +60,16 @@ public class MediaPlayer {
                         new Runnable() {
                             @Override
                             public void run() {
+                                MediaPlayerFragment existingPlayer = players.get(playerId);
+                                if (existingPlayer != null) {
+                                    JSObject ret = new JSObject();
+                                    ret.put("method", "create");
+                                    ret.put("result", false);
+                                    ret.put("message", "Player with id " + playerId + " is already created");
+                                    call.resolve(ret);
+                                    return;
+                                }
+
                                 FragmentHelpers fragmentHelpers = new FragmentHelpers(bridge);
                                 int layoutId = fragmentHelpers.getIdFromPlayerId(playerId);
 
