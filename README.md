@@ -504,7 +504,7 @@ removeAllListeners(options: MediaPlayerIdOptions) => Promise<void>
 
 #### MediaPlayerAndroidOptions
 
-<code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; top?: number; left?: number; height?: number; width?: number; }</code>
+<code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; top?: number; start?: number; height?: number; width?: number; }</code>
 
 
 #### MediaPlayerWebOptions

@@ -129,7 +129,7 @@ export type MediaPlayerAndroidOptions = {
   automaticallyEnterPiP?: boolean;
   fullscreenOnLandscape?: boolean;
   top?: number;
-  left?: number;
+  start?: number;
   height?: number;
   width?: number;
 };
