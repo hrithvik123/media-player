@@ -29,8 +29,6 @@ import AVKit
             )
             self.bridge?.webView?.superview?.addSubview(mediaPlayerView)
 
-            //self.bridge?.webView?.inputView?.scrollView.delegate = mediaPlayerView
-            //self.bridge?.webView?.scrollView.delegate = mediaPlayerView
             self.addPlayers(playerId: playerId, player: mediaPlayerView)
             call.resolve(["result": true, "method": "create", "value": playerId]);
         }
