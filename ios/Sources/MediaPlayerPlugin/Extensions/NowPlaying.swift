@@ -52,7 +52,7 @@ extension MediaPlayerView {
                 }
 
                 NotificationCenter.default.post(
-                    name: .mediaPlayerTimeUpdate,
+                    name: .mediaPlayerTimeUpdated,
                     object: nil,
                     userInfo: ["playerId": self.playerId, "currentTime": currentTime.seconds]
                 )

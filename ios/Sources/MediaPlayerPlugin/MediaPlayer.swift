@@ -29,8 +29,6 @@ import AVKit
             )
             self.bridge?.webView?.superview?.addSubview(mediaPlayerView)
 
-            //self.bridge?.webView?.inputView?.scrollView.delegate = mediaPlayerView
-            //self.bridge?.webView?.scrollView.delegate = mediaPlayerView
             self.addPlayers(playerId: playerId, player: mediaPlayerView)
             call.resolve(["result": true, "method": "create", "value": playerId]);
         }
@@ -72,11 +70,7 @@ import AVKit
             call.resolve(["result": false, "method": "setCurrentTime", "message": "Player with playerId \(playerId) not found"])
             return
         }
-        guard time <= Double(player.duration) else {
-            call.resolve(["result": false, "method": "setCurrentTime", "message": "New time is beyond video duration"])
-            return
-        }
-        player.player?.seek(to: CMTimeMake(value: Int64(time*1000), timescale: 1000))
+          player.player?.seek(to: CMTimeMake(value: Int64(time*1000), timescale: 1000))
         call.resolve(["result": true, "method": "setCurrentTime", "value": playerId])
     }
     @objc func isPlaying(call: CAPPluginCall, playerId: String) {

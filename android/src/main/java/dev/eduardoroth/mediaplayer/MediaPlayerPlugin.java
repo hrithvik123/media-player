@@ -1,56 +1,41 @@
 package dev.eduardoroth.mediaplayer;
 
-import android.Manifest;
-import android.content.Context;
-
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.getcapacitor.annotation.Permission;
-import com.google.android.gms.cast.framework.CastContext;
-import com.google.common.util.concurrent.MoreExecutors;
 
-import android.net.Uri;
 import android.util.DisplayMetrics;
 
+import androidx.annotation.OptIn;
+import androidx.media3.common.util.UnstableApi;
+
 import org.json.JSONException;
+
+import java.io.File;
 
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.SubtitleOptions;
-import dev.eduardoroth.mediaplayer.models.SubtitleSettings;
-import dev.eduardoroth.mediaplayer.utilities.FileHelpers;
-import dev.eduardoroth.mediaplayer.utilities.NotificationHelpers;
-import dev.eduardoroth.mediaplayer.utilities.RunnableHelper;
 
-@CapacitorPlugin(
-        name = "MediaPlayer",
-        permissions = {
-                @Permission(alias = "mediaVideo",
-                        strings = {Manifest.permission.READ_MEDIA_VIDEO}),
-                @Permission(alias = "publicStorage",
-                        strings = {Manifest.permission.READ_EXTERNAL_STORAGE})
-        })
+@UnstableApi
+@CapacitorPlugin(name = "MediaPlayer")
 public class MediaPlayerPlugin extends Plugin {
-    private Context context;
-    private CastContext castContext;
     private MediaPlayer implementation;
-    private FileHelpers fileHelpers;
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     public void load() {
-        context = getContext();
-        try {
-            castContext = CastContext.getSharedInstance(context, MoreExecutors.directExecutor()).getResult();
-        } catch (RuntimeException ignored) {
-        }
-        addObserversToNotificationCenter();
-        implementation = new MediaPlayer(context, castContext, bridge);
-        this.fileHelpers = new FileHelpers(context);
+        bridge.getActivity().getSupportFragmentManager();
+        implementation = new MediaPlayer(bridge.getActivity());
+        MediaPlayerNotificationCenter.init(bridge.getActivity());
+        MediaPlayerNotificationCenter.listenNotifications(nextNotification -> {
+            notifyListeners(nextNotification.getEventName(), nextNotification.getData());
+        });
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     @PluginMethod
     public void create(final PluginCall call) {
         String playerId = call.getString("playerId");
@@ -72,76 +57,27 @@ public class MediaPlayerPlugin extends Plugin {
             return;
         }
 
-        Uri parsedUrl = null;
-        try {
-            String path = fileHelpers.getFilePath(url);
-            parsedUrl = Uri.parse(path);
-        } catch (NullPointerException ignored) {
-        }
-
         JSObject androidOptions = call.getObject("android");
         JSObject extraOptions = call.getObject("extra");
         JSObject subtitleOptions = extraOptions.getJSObject("subtitles");
 
-        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        DisplayMetrics metrics = bridge.getContext().getResources().getDisplayMetrics();
 
-        double top = Double.parseDouble("0");
-        try {
-            top = androidOptions.getDouble("top");
-        } catch (JSONException ignored) {
-        }
-        double left = Double.parseDouble("0");
-        try {
-            left = androidOptions.getDouble("left");
-        } catch (JSONException ignored) {
-        }
-        double width = Double.parseDouble(String.valueOf(metrics.widthPixels));
-        try {
-            width = androidOptions.getDouble("width");
-        } catch (JSONException ignored) {
-        }
-        double height = ((double) 9 / 16) * ((double) metrics.heightPixels);
-        try {
-            height = androidOptions.getDouble("height");
-        } catch (JSONException ignored) {
-        }
+        Integer paramTop = androidOptions.getInteger("top", null);
+        Integer paramStart = androidOptions.getInteger("start", null);
+        Integer paramWidth = androidOptions.getInteger("width", null);
+        Integer paramHeight = androidOptions.getInteger("height", null);
 
-        AndroidOptions android = new AndroidOptions(
-                androidOptions.optBoolean("enableChromecast", true),
-                androidOptions.optBoolean("enablePiP", true),
-                androidOptions.optBoolean("enableBackgroundPlay", true),
-                androidOptions.optBoolean("openInFullscreen", false),
-                androidOptions.optBoolean("automaticallyEnterPiP", false),
-                androidOptions.optBoolean("fullscreenOnLandscape", true),
-                top,
-                left,
-                height,
-                width
-        );
+        AndroidOptions android = new AndroidOptions(androidOptions.optBoolean("enableChromecast", true), androidOptions.optBoolean("enablePiP", true), androidOptions.optBoolean("enableBackgroundPlay", true), androidOptions.optBoolean("openInFullscreen", false), androidOptions.optBoolean("automaticallyEnterPiP", false), androidOptions.optBoolean("fullscreenOnLandscape", true), paramTop == null ? 0 : (int) (paramTop * metrics.scaledDensity), paramStart == null ? 0 : (int) (paramStart * metrics.scaledDensity), paramWidth == null ? metrics.widthPixels : (int) (paramWidth * metrics.scaledDensity), paramHeight == null ? ((paramWidth == null ? metrics.widthPixels : (int) (paramWidth * metrics.scaledDensity)) * 9 / 16) : (int) (paramHeight * metrics.scaledDensity));
 
         SubtitleOptions subtitles = null;
         if (subtitleOptions != null) {
             double fontSize = Double.parseDouble("12");
             try {
                 fontSize = subtitleOptions.getDouble("fontSize");
-            } catch (JSONException ignored) {
+            } catch (NullPointerException | JSONException ignored) {
             }
-            SubtitleSettings subtitleSettings = new SubtitleSettings(
-                    subtitleOptions.getString("language"),
-                    subtitleOptions.getString("foregroundColor"),
-                    subtitleOptions.getString("backgroundColor"),
-                    fontSize
-            );
-            Uri subtitlesUrl = null;
-            try {
-                subtitlesUrl = Uri.parse(subtitleOptions.getString("url"));
-            } catch (NullPointerException ignored) {
-            }
-
-            subtitles = new SubtitleOptions(
-                    subtitlesUrl,
-                    subtitleSettings
-            );
+            subtitles = new SubtitleOptions(subtitleOptions.getString("url", null), subtitleOptions.getString("language", "English"), subtitleOptions.getString("foregroundColor", null), subtitleOptions.getString("backgroundColor", null), fontSize);
         }
 
         double rate = 1;
@@ -150,26 +86,8 @@ public class MediaPlayerPlugin extends Plugin {
         } catch (JSONException ignored) {
         }
 
-        Uri posterUrl = null;
-        try {
-            posterUrl = Uri.parse(extraOptions.getString("poster"));
-        } catch (NullPointerException ignored) {
-        }
-
-        ExtraOptions extra = new ExtraOptions(
-                extraOptions.getString("title"),
-                extraOptions.getString("subtitle"),
-                posterUrl,
-                extraOptions.getString("artist"),
-                rate,
-                subtitles,
-                extraOptions.optBoolean("autoPlayWhenReady", false),
-                extraOptions.optBoolean("loopOnEnd", false),
-                extraOptions.optBoolean("showControls", true),
-                extraOptions.getJSObject("headers")
-        );
-
-        implementation.create(call, playerId, parsedUrl, android, extra);
+        ExtraOptions extra = new ExtraOptions(extraOptions.getString("title"), extraOptions.getString("subtitle"), getFilePath(extraOptions.getString("poster", null)), extraOptions.getString("artist"), rate, subtitles, extraOptions.optBoolean("autoPlayWhenReady", false), extraOptions.optBoolean("loopOnEnd", false), extraOptions.optBoolean("showControls", true), extraOptions.getJSObject("headers"));
+        implementation.create(call, playerId, url, android, extra);
     }
 
     @PluginMethod
@@ -183,14 +101,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.play(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.play(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
@@ -204,14 +120,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.pause(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.pause(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
@@ -225,14 +139,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.getDuration(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.getDuration(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
@@ -246,20 +158,18 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.getCurrentTime(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.getCurrentTime(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
     public void setCurrentTime(final PluginCall call) {
         String playerId = call.getString("playerId");
-        Double time = call.getDouble("time");
+        Long time = call.getLong("time");
         if (playerId == null) {
             JSObject ret = new JSObject();
             ret.put("method", "setCurrentTime");
@@ -276,14 +186,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.setCurrentTime(call, playerId, time);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.setCurrentTime(call, playerId, time);
+            }
+        });
     }
 
     @PluginMethod
@@ -297,14 +205,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.isPlaying(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.isPlaying(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
@@ -318,18 +224,16 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.isMuted(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.isMuted(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
-    public void setVisibilityBackgroundForPiP(final PluginCall call){
+    public void setVisibilityBackgroundForPiP(final PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("method", "setVisibilityBackgroundForPiP");
         ret.put("result", false);
@@ -349,14 +253,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.mute(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.mute(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
@@ -370,14 +272,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.getVolume(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.getVolume(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
@@ -400,14 +300,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.setVolume(call, playerId, volume);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.setVolume(call, playerId, volume);
+            }
+        });
     }
 
     @PluginMethod
@@ -421,14 +319,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.getRate(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.getRate(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
@@ -451,14 +347,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.setRate(call, playerId, rate);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.setRate(call, playerId, rate);
+            }
+        });
     }
 
     @PluginMethod
@@ -472,125 +366,48 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.remove(call, playerId);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.remove(call, playerId);
+            }
+        });
     }
 
     @PluginMethod
     public void removeAll(final PluginCall call) {
-        bridge.getActivity().runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        implementation.removeAll(call);
-                    }
-                }
-        );
+        bridge.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                implementation.removeAll(call);
+            }
+        });
     }
 
-    private void addObserversToNotificationCenter() {
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:Ready", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        notifyListeners("MediaPlayer:Ready", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:Play", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        notifyListeners("MediaPlayer:Play", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:Pause", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        notifyListeners("MediaPlayer:Pause", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:Ended", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        notifyListeners("MediaPlayer:Ended", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:Removed", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        notifyListeners("MediaPlayer:Removed", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:Seeked", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        data.put("previousTime", this.getInfo().get("previousTime"));
-                        data.put("newTime", this.getInfo().get("newTime"));
-                        notifyListeners("MediaPlayer:Seeked", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:TimeUpdate", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        data.put("currentTime", this.getInfo().get("currentTime"));
-                        notifyListeners("MediaPlayer:TimeUpdate", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:FullScreen", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        data.put("isInFullScreen", this.getInfo().get("isInFullScreen"));
-                        notifyListeners("MediaPlayer:FullScreen", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:PictureInPicture", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        data.put("isInPictureInPicture", this.getInfo().get("isInPictureInPicture"));
-                        notifyListeners("MediaPlayer:PictureInPicture", data);
-                    }
-                });
-        NotificationHelpers.defaultCenter()
-                .addMethodForNotification("MediaPlayer:isPlayingInBackground", new RunnableHelper() {
-                    @Override
-                    public void run() {
-                        JSObject data = new JSObject();
-                        data.put("playerId", this.getInfo().get("playerId"));
-                        data.put("isPlayingInBackground", this.getInfo().get("isPlayingInBackground"));
-                        notifyListeners("MediaPlayer:isPlayingInBackground", data);
-                    }
-                });
+    private String getFilePath(String url) {
+        if (url == null) {
+            return null;
+        }
+        if (url.startsWith("file:///")) {
+            return url;
+        }
+        String path = null;
+        String http = url.substring(0, 4);
+        if (http.equals("http")) {
+            path = url;
+        } else {
+            if (url.startsWith("application")) {
+                String filesDir = getContext().getFilesDir() + "/";
+                path = filesDir + url.substring(url.lastIndexOf("files/") + 6);
+                File file = new File(path);
+                if (!file.exists()) {
+                    path = null;
+                }
+            } else if (url.contains("assets")) {
+                path = "file:///android_asset/" + url;
+            }
+        }
+        return path;
     }
 
 }

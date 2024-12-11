@@ -67,7 +67,7 @@ extension MediaPlayerView: AVPlayerViewControllerDelegate {
         timeToSeekAfterUserNavigatedFrom oldTime: CMTime,
         to targetTime: CMTime
     ) -> CMTime {
-        NotificationCenter.default.post(name: .mediaPlayerSeeked, object: nil, userInfo: ["playerId": self.playerId, "previousTime": oldTime, "newTime": targetTime])
+        NotificationCenter.default.post(name: .mediaPlayerSeek, object: nil, userInfo: ["playerId": self.playerId, "previousTime": oldTime, "newTime": targetTime])
         return targetTime
     }
     

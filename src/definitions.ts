@@ -39,11 +39,11 @@ export interface MediaPlayerPlugin {
     listener: (event: { playerId: string }) => void,
   ): Promise<PluginListenerHandle>;
   addListener(
-    event: 'MediaPlayer:Seeked',
+    event: 'MediaPlayer:Seek',
     listener: (event: { playerId: string; previousTime: number | undefined; newTime: number }) => void,
   ): Promise<PluginListenerHandle>;
   addListener(
-    event: 'MediaPlayer:TimeUpdate',
+    event: 'MediaPlayer:TimeUpdated',
     listener: (event: { playerId: string; currentTime: number }) => void,
   ): Promise<PluginListenerHandle>;
   addListener(
@@ -129,7 +129,7 @@ export type MediaPlayerAndroidOptions = {
   automaticallyEnterPiP?: boolean;
   fullscreenOnLandscape?: boolean;
   top?: number;
-  left?: number;
+  start?: number;
   height?: number;
   width?: number;
 };
