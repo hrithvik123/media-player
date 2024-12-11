@@ -42,8 +42,8 @@ npx cap sync
 * [`addListener('MediaPlayer:Pause', ...)`](#addlistenermediaplayerpause-)
 * [`addListener('MediaPlayer:Ended', ...)`](#addlistenermediaplayerended-)
 * [`addListener('MediaPlayer:Removed', ...)`](#addlistenermediaplayerremoved-)
-* [`addListener('MediaPlayer:Seeked', ...)`](#addlistenermediaplayerseeked-)
-* [`addListener('MediaPlayer:TimeUpdate', ...)`](#addlistenermediaplayertimeupdate-)
+* [`addListener('MediaPlayer:Seek', ...)`](#addlistenermediaplayerseek-)
+* [`addListener('MediaPlayer:TimeUpdated', ...)`](#addlistenermediaplayertimeupdated-)
 * [`addListener('MediaPlayer:FullScreen', ...)`](#addlistenermediaplayerfullscreen-)
 * [`addListener('MediaPlayer:PictureInPicture', ...)`](#addlistenermediaplayerpictureinpicture-)
 * [`addListener('MediaPlayer:isPlayingInBackground', ...)`](#addlistenermediaplayerisplayinginbackground-)
@@ -372,15 +372,15 @@ addListener(event: 'MediaPlayer:Removed', listener: (event: { playerId: string; 
 --------------------
 
 
-### addListener('MediaPlayer:Seeked', ...)
+### addListener('MediaPlayer:Seek', ...)
 
 ```typescript
-addListener(event: 'MediaPlayer:Seeked', listener: (event: { playerId: string; previousTime: number | undefined; newTime: number; }) => void) => Promise<PluginListenerHandle>
+addListener(event: 'MediaPlayer:Seek', listener: (event: { playerId: string; previousTime: number | undefined; newTime: number; }) => void) => Promise<PluginListenerHandle>
 ```
 
 | Param          | Type                                                                                          |
 | -------------- | --------------------------------------------------------------------------------------------- |
-| **`event`**    | <code>'MediaPlayer:Seeked'</code>                                                             |
+| **`event`**    | <code>'MediaPlayer:Seek'</code>                                                               |
 | **`listener`** | <code>(event: { playerId: string; previousTime: number; newTime: number; }) =&gt; void</code> |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
@@ -388,15 +388,15 @@ addListener(event: 'MediaPlayer:Seeked', listener: (event: { playerId: string; p
 --------------------
 
 
-### addListener('MediaPlayer:TimeUpdate', ...)
+### addListener('MediaPlayer:TimeUpdated', ...)
 
 ```typescript
-addListener(event: 'MediaPlayer:TimeUpdate', listener: (event: { playerId: string; currentTime: number; }) => void) => Promise<PluginListenerHandle>
+addListener(event: 'MediaPlayer:TimeUpdated', listener: (event: { playerId: string; currentTime: number; }) => void) => Promise<PluginListenerHandle>
 ```
 
 | Param          | Type                                                                        |
 | -------------- | --------------------------------------------------------------------------- |
-| **`event`**    | <code>'MediaPlayer:TimeUpdate'</code>                                       |
+| **`event`**    | <code>'MediaPlayer:TimeUpdated'</code>                                      |
 | **`listener`** | <code>(event: { playerId: string; currentTime: number; }) =&gt; void</code> |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
