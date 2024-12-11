@@ -7,8 +7,8 @@ extension NSNotification.Name {
     static var mediaPlayerPause: Notification.Name {return .init(rawValue: "mediaPlayerPause")}
     static var mediaPlayerEnded: Notification.Name {return .init(rawValue: "mediaPlayerEnded")}
     static var mediaPlayerRemoved: Notification.Name {return .init(rawValue: "mediaPlayerRemoved")}
-    static var mediaPlayerSeeked: Notification.Name {return .init(rawValue: "mediaPlayerSeeked")}
-    static var mediaPlayerTimeUpdate: Notification.Name {return .init(rawValue: "mediaPlayerTimeUpdate")}
+    static var mediaPlayerSeek: Notification.Name {return .init(rawValue: "mediaPlayerSeek")}
+    static var mediaPlayerTimeUpdated: Notification.Name {return .init(rawValue: "mediaPlayerTimeUpdated")}
 
     static var mediaPlayerFullscreen: Notification.Name {return .init(rawValue: "mediaPlayerFullscreen")}
     static var mediaPlayerPictureInPicture: Notification.Name {return .init(rawValue: "mediaPlayerPictureInPicture")}
@@ -54,17 +54,17 @@ extension MediaPlayerPlugin {
         }
     }
 
-    @objc func mediaPlayerSeeked(notification: Notification) {
+    @objc func mediaPlayerSeek(notification: Notification) {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
-            self.notifyListeners("MediaPlayer:Seeked", data: info)
+            self.notifyListeners("MediaPlayer:Seek", data: info)
         }
     }
 
-    @objc func mediaPlayerTimeUpdate(notification: Notification) {
+    @objc func mediaPlayerTimeUpdated(notification: Notification) {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
-            self.notifyListeners("MediaPlayer:TimeUpdate", data: info)
+            self.notifyListeners("MediaPlayer:TimeUpdated", data: info)
         }
     }
 

@@ -33,8 +33,8 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     var mediaPlayerPauseObserver: Any?;
     var mediaPlayerEndedObserver: Any?;
     var mediaPlayerReadyObserver: Any?;
-    var mediaPlayerSeekedObserver: Any?
-    var mediaPlayerTimeUpdateObserver: Any?
+    var mediaPlayerSeekObserver: Any?
+    var mediaPlayerTimeUpdatedObserver: Any?
     var mediaPlayerFullscreenObserver: Any?
     var mediaPlayerPictureInPictureObserver: Any?
     var mediaPlayerIsPlayingInBackgroundObserver: Any?

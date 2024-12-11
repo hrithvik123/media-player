@@ -9,8 +9,8 @@ extension MediaPlayerPlugin {
         NotificationCenter.default.removeObserver(mediaPlayerPauseObserver!)
         NotificationCenter.default.removeObserver(mediaPlayerEndedObserver!)
         NotificationCenter.default.removeObserver(mediaPlayerReadyObserver!)
-        NotificationCenter.default.removeObserver(mediaPlayerSeekedObserver!)
-        NotificationCenter.default.removeObserver(mediaPlayerTimeUpdateObserver!)
+        NotificationCenter.default.removeObserver(mediaPlayerSeekObserver!)
+        NotificationCenter.default.removeObserver(mediaPlayerTimeUpdatedObserver!)
         
         NotificationCenter.default.removeObserver(mediaPlayerFullscreenObserver!)
         NotificationCenter.default.removeObserver(mediaPlayerPictureInPictureObserver!)
@@ -34,13 +34,13 @@ extension MediaPlayerPlugin {
             .addObserver(forName: .mediaPlayerEnded, object: nil, queue: nil,
                         using: mediaPlayerEnded)
         
-        mediaPlayerSeekedObserver = NotificationCenter.default
-            .addObserver(forName: .mediaPlayerSeeked, object: nil, queue: nil,
-                         using: mediaPlayerSeeked)
+        mediaPlayerSeekObserver = NotificationCenter.default
+            .addObserver(forName: .mediaPlayerSeek, object: nil, queue: nil,
+                         using: mediaPlayerSeek)
         
-        mediaPlayerTimeUpdateObserver = NotificationCenter.default
-            .addObserver(forName: .mediaPlayerTimeUpdate, object: nil, queue: nil,
-                         using: mediaPlayerTimeUpdate)
+        mediaPlayerTimeUpdatedObserver = NotificationCenter.default
+            .addObserver(forName: .mediaPlayerTimeUpdated, object: nil, queue: nil,
+                         using: mediaPlayerTimeUpdated)
         
         mediaPlayerFullscreenObserver = NotificationCenter.default
             .addObserver(forName: .mediaPlayerFullscreen, object: nil, queue: nil,
