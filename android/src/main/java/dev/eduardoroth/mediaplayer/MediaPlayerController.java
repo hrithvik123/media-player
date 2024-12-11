@@ -113,6 +113,7 @@ public class MediaPlayerController {
     }
 
     public void play() {
+        _mediaPlayerState.showSubtitles.set(shouldShowSubtitles());
         _activePlayer.play();
     }
 
@@ -189,6 +190,16 @@ public class MediaPlayerController {
             }
         }
         return false;
+    }
+
+    public void destroy() {
+        _activePlayer.release();
+        if (_exoPlayerMediaSession != null) {
+            _exoPlayerMediaSession.release();
+        }
+        if (_castPlayerMediaSession != null) {
+            _castPlayerMediaSession.release();
+        }
     }
 
     private void setActivePlayer() {
