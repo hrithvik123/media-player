@@ -2,5 +2,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
-    <color name="exo_black_opacity_60" tools:ignore="PrivateResource">#CC000000</color>
 </resources>
