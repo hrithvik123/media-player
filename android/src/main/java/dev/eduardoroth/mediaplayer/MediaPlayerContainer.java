@@ -241,4 +241,9 @@ public class MediaPlayerContainer extends Fragment {
 
         super.onResume();
     }
+
+    public void onDestroy(){
+        _playerController.destroy();
+        super.onDestroy();
+    }
 }
