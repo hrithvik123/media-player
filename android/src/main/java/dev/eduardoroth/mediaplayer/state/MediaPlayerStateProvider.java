@@ -15,7 +15,7 @@ public class MediaPlayerStateProvider {
 
     public static MediaPlayerState getState(String playerId) {
         if (!_provider._instances.containsKey(playerId)) {
-            return null;
+            throw new Error("State not found for playerId " + playerId);
         }
         return _provider._instances.get(playerId);
     }

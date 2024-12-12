@@ -29,6 +29,7 @@ import androidx.mediarouter.media.MediaRouter;
 
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastState;
+import com.google.android.gms.cast.framework.CastStateListener;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
@@ -49,12 +50,11 @@ import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 public class MediaPlayerController {
     private final int _layoutId;
     private final String _playerId;
-    private final AndroidOptions _android;
     private final ExtraOptions _extra;
-    private final Handler _handler = new Handler();
     private final Map<String, MediaItem> _mediaItems = new HashMap<>();
 
     private final Context _context;
+    private CastContext _castContext = null;
     private final ExoPlayer _exoPlayer;
     private final CastPlayer _castPlayer;
     private final MediaPlayerState _mediaPlayerState;
@@ -62,12 +62,13 @@ public class MediaPlayerController {
     private MediaSession _castPlayerMediaSession;
     private PlayerNotificationManager _playerNotificationManager;
 
+    private final Handler _handlerCurrentTime = new Handler();
+
     private Player _activePlayer;
 
     public MediaPlayerController(Context context, String playerId, AndroidOptions android, ExtraOptions extra) {
         _layoutId = playerId.chars().reduce(0, Integer::sum);
         _playerId = playerId;
-        _android = android;
         _extra = extra;
         _context = context;
 
@@ -88,24 +89,6 @@ public class MediaPlayerController {
                 setActivePlayer(false);
             }
         });
-        _mediaPlayerState.willBeDestroyed.observe(willBeDestroyed -> {
-            if (willBeDestroyed) {
-                _exoPlayer.release();
-                _exoPlayerMediaSession.release();
-                _exoPlayerMediaSession = null;
-
-                if (_mediaPlayerState.canCast.get()) {
-                    assert _castPlayer != null;
-                    _castPlayer.release();
-                    _castPlayerMediaSession.release();
-                    _castPlayerMediaSession = null;
-                }
-
-                _playerNotificationManager.setPlayer(null);
-                _playerNotificationManager.invalidate();
-            }
-        });
-
     }
 
     public Player getActivePlayer() {
@@ -193,13 +176,21 @@ public class MediaPlayerController {
     }
 
     public void destroy() {
-        _activePlayer.release();
+        _exoPlayer.pause();
         if (_exoPlayerMediaSession != null) {
             _exoPlayerMediaSession.release();
         }
-        if (_castPlayerMediaSession != null) {
+        _exoPlayer.release();
+
+        if (_mediaPlayerState.canCast.get() && _castPlayer != null) {
+            _castPlayer.pause();
+            _castPlayer.release();
             _castPlayerMediaSession.release();
+            _castPlayerMediaSession = null;
         }
+
+        _playerNotificationManager.setPlayer(null);
+        _playerNotificationManager.invalidate();
     }
 
     private void setActivePlayer() {
@@ -260,46 +251,29 @@ public class MediaPlayerController {
         exoPlayer.setRepeatMode(_extra.loopOnEnd ? Player.REPEAT_MODE_ONE : Player.REPEAT_MODE_OFF);
         exoPlayer.setAudioAttributes(new AudioAttributes.Builder().setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).setAllowedCapturePolicy(C.ALLOW_CAPTURE_BY_SYSTEM).setUsage(C.USAGE_MEDIA).build(), true);
 
-        /// Listeners
-        Player.Listener playerListener = new Player.Listener() {
+        exoPlayer.addListener(new Player.Listener() {
             @Override
             public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, int reason) {
                 Player.Listener.super.onPositionDiscontinuity(oldPosition, newPosition, reason);
                 if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-                    MediaPlayerNotificationCenter.post(
-                            MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_SEEK)
-                                    .addData("previousTime", oldPosition.positionMs / 1000)
-                                    .addData("newTime", newPosition.positionMs / 1000)
-                                    .build()
-                    );
+                    MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_SEEK).addData("previousTime", oldPosition.positionMs / 1000).addData("newTime", newPosition.positionMs / 1000).build());
                 }
             }
 
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
-                Player.Listener.super.onIsPlayingChanged(isPlaying);
                 if (isPlaying) {
-                    _handler.postDelayed(new Runnable() {
+                    MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_PLAY).build());
+                    _handlerCurrentTime.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            MediaPlayerNotificationCenter.post(
-                                    MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_TIME_UPDATED)
-                                            .addData("currentTime", exoPlayer.getCurrentPosition() / 1000)
-                                            .build()
-                            );
-                            _handler.postDelayed(this, 100);
+                            MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_TIME_UPDATED).addData("currentTime", _exoPlayer.getCurrentPosition() / 1000).build());
+                            _handlerCurrentTime.postDelayed(this, 100);
                         }
                     }, 100);
-                    MediaPlayerNotificationCenter.post(
-                            MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_PLAY)
-                                    .build()
-                    );
                 } else {
-                    _handler.removeCallbacksAndMessages(null);
-                    MediaPlayerNotificationCenter.post(
-                            MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_PAUSE)
-                                    .build()
-                    );
+                    _handlerCurrentTime.removeCallbacksAndMessages(null);
+                    MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_PAUSE).build());
                 }
             }
 
@@ -311,24 +285,17 @@ public class MediaPlayerController {
                     case Player.STATE_IDLE:
                         break;
                     case Player.STATE_ENDED:
-                        MediaPlayerNotificationCenter.post(
-                                MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_ENDED)
-                                        .build()
-                        );
+                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_ENDED).build());
                         break;
                     case Player.STATE_READY:
-                        MediaPlayerNotificationCenter.post(
-                                MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_READY)
-                                        .build()
-                        );
+                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_READY).build());
                         if (_extra.autoPlayWhenReady) {
                             exoPlayer.play();
                         }
                         break;
                 }
             }
-        };
-        exoPlayer.addListener(playerListener);
+        });
 
         _exoPlayerMediaSession = new MediaSession.Builder(_context, exoPlayer).setPeriodicPositionUpdateEnabled(true).build();
 
@@ -340,16 +307,15 @@ public class MediaPlayerController {
 
     @OptIn(markerClass = UnstableApi.class)
     private CastPlayer createCastPlayer() {
-        CastContext castContext = null;
         try {
-            castContext = CastContext.getSharedInstance(_context, MoreExecutors.directExecutor()).getResult();
+            _castContext = CastContext.getSharedInstance(_context, MoreExecutors.directExecutor()).getResult();
         } catch (RuntimeException ignored) {
         }
-        if (castContext == null) {
+        if (_castContext == null) {
             return null;
         }
 
-        CastPlayer castPlayer = new CastPlayer(castContext);
+        CastPlayer castPlayer = new CastPlayer(_castContext);
 
         MediaRouter mRouter = MediaRouter.getInstance(_context);
         MediaRouteSelector mSelector = new MediaRouteSelector.Builder().addControlCategories(Arrays.asList(MediaControlIntent.CATEGORY_LIVE_AUDIO, MediaControlIntent.CATEGORY_LIVE_VIDEO)).build();
@@ -357,7 +323,7 @@ public class MediaPlayerController {
         mRouter.addCallback(mSelector, new MediaRouter.Callback() {
         }, MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
 
-        castContext.addCastStateListener(state -> _mediaPlayerState.canCast.set(state != CastState.NO_DEVICES_AVAILABLE));
+        _castContext.addCastStateListener(state -> _mediaPlayerState.canCast.set(state != CastState.NO_DEVICES_AVAILABLE));
 
         castPlayer.addListener(new CastPlayer.Listener() {
             @Override
@@ -365,19 +331,14 @@ public class MediaPlayerController {
                 CastPlayer.Listener.super.onPlaybackStateChanged(playbackState);
                 if (playbackState == CastPlayer.STATE_READY) {
                     if (castPlayer.isPlaying()) {
-                        MediaPlayerNotificationCenter.post(
-                                MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_PLAY)
-                                        .build()
-                        );
+                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_PLAY).build());
                     } else {
-                        MediaPlayerNotificationCenter.post(
-                                MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_PAUSE)
-                                        .build()
-                        );
+                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, NOTIFICATION_TYPE.MEDIA_PLAYER_PAUSE).build());
                     }
                 }
             }
         });
+
         castPlayer.setSessionAvailabilityListener(new SessionAvailabilityListener() {
             @Override
             public void onCastSessionAvailable() {

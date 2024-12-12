@@ -30,9 +30,7 @@ public class MediaPlayerPlugin extends Plugin {
         bridge.getActivity().getSupportFragmentManager();
         implementation = new MediaPlayer(bridge.getActivity());
         MediaPlayerNotificationCenter.init(bridge.getActivity());
-        MediaPlayerNotificationCenter.listenNotifications(nextNotification -> {
-            notifyListeners(nextNotification.getEventName(), nextNotification.getData());
-        });
+        MediaPlayerNotificationCenter.listenNotifications(nextNotification -> notifyListeners(nextNotification.getEventName(), nextNotification.getData()));
     }
 
     @OptIn(markerClass = UnstableApi.class)
@@ -87,7 +85,7 @@ public class MediaPlayerPlugin extends Plugin {
         }
 
         ExtraOptions extra = new ExtraOptions(extraOptions.getString("title"), extraOptions.getString("subtitle"), getFilePath(extraOptions.getString("poster", null)), extraOptions.getString("artist"), rate, subtitles, extraOptions.optBoolean("autoPlayWhenReady", false), extraOptions.optBoolean("loopOnEnd", false), extraOptions.optBoolean("showControls", true), extraOptions.getJSObject("headers"));
-        implementation.create(call, playerId, url, android, extra);
+        bridge.getActivity().runOnUiThread(() -> implementation.create(call, playerId, url, android, extra));
     }
 
     @PluginMethod
@@ -101,12 +99,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.play(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.play(call, playerId));
     }
 
     @PluginMethod
@@ -120,12 +113,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.pause(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.pause(call, playerId));
     }
 
     @PluginMethod
@@ -139,12 +127,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.getDuration(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.getDuration(call, playerId));
     }
 
     @PluginMethod
@@ -158,12 +141,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.getCurrentTime(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.getCurrentTime(call, playerId));
     }
 
     @PluginMethod
@@ -186,12 +164,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.setCurrentTime(call, playerId, time);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.setCurrentTime(call, playerId, time));
     }
 
     @PluginMethod
@@ -205,12 +178,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.isPlaying(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.isPlaying(call, playerId));
     }
 
     @PluginMethod
@@ -224,12 +192,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.isMuted(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.isMuted(call, playerId));
     }
 
     @PluginMethod
@@ -239,7 +202,6 @@ public class MediaPlayerPlugin extends Plugin {
         ret.put("result", false);
         ret.put("message", "Method setVisibilityBackgroundForPiP not implemented for Android");
         call.resolve(ret);
-        return;
     }
 
     @PluginMethod
@@ -253,12 +215,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.mute(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.mute(call, playerId));
     }
 
     @PluginMethod
@@ -272,12 +229,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.getVolume(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.getVolume(call, playerId));
     }
 
     @PluginMethod
@@ -300,12 +252,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.setVolume(call, playerId, volume);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.setVolume(call, playerId, volume));
     }
 
     @PluginMethod
@@ -319,12 +266,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.getRate(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.getRate(call, playerId));
     }
 
     @PluginMethod
@@ -347,12 +289,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.setRate(call, playerId, rate);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.setRate(call, playerId, rate));
     }
 
     @PluginMethod
@@ -366,22 +303,12 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.remove(call, playerId);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.remove(call, playerId));
     }
 
     @PluginMethod
     public void removeAll(final PluginCall call) {
-        bridge.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                implementation.removeAll(call);
-            }
-        });
+        bridge.getActivity().runOnUiThread(() -> implementation.removeAll(call));
     }
 
     private String getFilePath(String url) {

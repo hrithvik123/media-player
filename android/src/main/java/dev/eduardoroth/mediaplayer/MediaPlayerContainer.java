@@ -219,7 +219,7 @@ public class MediaPlayerContainer extends Fragment {
         }
         return actionBar;
     }
-    
+
     @Override
     public void onPause() {
         if (_android.enableBackgroundPlay) {
@@ -242,8 +242,10 @@ public class MediaPlayerContainer extends Fragment {
         super.onResume();
     }
 
+    @Override
     public void onDestroy(){
         _playerController.destroy();
         super.onDestroy();
     }
+
 }

@@ -36,8 +36,6 @@ public class MediaPlayerState extends ViewModel {
     public final MediaPlayerStateProperty<Long> getCurrentTime;
     public final MediaPlayerStateProperty<Long> getDuration;
 
-    public final MediaPlayerStateProperty<Boolean> willBeDestroyed;
-
     public final MediaPlayerStateProperty<MediaPlayerController> playerController;
     public final MediaPlayerStateProperty<AndroidOptions> androidOptions;
     public final MediaPlayerStateProperty<ExtraOptions> extraOptions;
@@ -58,8 +56,6 @@ public class MediaPlayerState extends ViewModel {
         showSubtitles = new MediaPlayerStateProperty<>(owner, false);
         getCurrentTime = new MediaPlayerStateProperty<>(owner, 0L);
         getDuration = new MediaPlayerStateProperty<>(owner, 0L);
-
-        willBeDestroyed = new MediaPlayerStateProperty<>(owner, false);
 
         playerController = new MediaPlayerStateProperty<>(owner, null, true);
         androidOptions = new MediaPlayerStateProperty<>(owner, null, true);
