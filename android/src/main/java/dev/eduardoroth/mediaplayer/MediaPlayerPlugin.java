@@ -66,7 +66,22 @@ public class MediaPlayerPlugin extends Plugin {
         Integer paramWidth = androidOptions.getInteger("width", null);
         Integer paramHeight = androidOptions.getInteger("height", null);
 
-        AndroidOptions android = new AndroidOptions(androidOptions.optBoolean("enableChromecast", true), androidOptions.optBoolean("enablePiP", true), androidOptions.optBoolean("enableBackgroundPlay", true), androidOptions.optBoolean("openInFullscreen", false), androidOptions.optBoolean("automaticallyEnterPiP", false), androidOptions.optBoolean("fullscreenOnLandscape", true), paramTop == null ? 0 : (int) (paramTop * metrics.scaledDensity), paramStart == null ? 0 : (int) (paramStart * metrics.scaledDensity), paramWidth == null ? metrics.widthPixels : (int) (paramWidth * metrics.scaledDensity), paramHeight == null ? ((paramWidth == null ? metrics.widthPixels : (int) (paramWidth * metrics.scaledDensity)) * 9 / 16) : (int) (paramHeight * metrics.scaledDensity));
+        int marginTop = paramTop == null ? 0 : (int) (paramTop * metrics.scaledDensity);
+        int marginStart = paramStart == null ? 0 : (int) (paramStart * metrics.scaledDensity);
+        int videoWidth = paramWidth == null ? (metrics.widthPixels - (marginStart * 2)) : (int) (paramWidth * metrics.scaledDensity);
+        int videoHeight = paramHeight == null ? (videoWidth * 9 / 16) : (int) (paramHeight * metrics.scaledDensity);
+
+        AndroidOptions android = new AndroidOptions(
+                androidOptions.optBoolean("enableChromecast", true),
+                androidOptions.optBoolean("enablePiP", true),
+                androidOptions.optBoolean("enableBackgroundPlay", true),
+                androidOptions.optBoolean("openInFullscreen", false),
+                androidOptions.optBoolean("automaticallyEnterPiP", false),
+                androidOptions.optBoolean("fullscreenOnLandscape", true),
+                marginTop,
+                marginStart,
+                videoWidth,
+                videoHeight);
 
         SubtitleOptions subtitles = null;
         if (subtitleOptions != null) {
