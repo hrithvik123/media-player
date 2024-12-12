@@ -55,7 +55,7 @@ public class MediaPlayerPlugin extends Plugin {
 
         JSObject androidOptions = call.getObject("android");
         JSObject extraOptions = call.getObject("extra");
-        JSObject subtitleOptions = extraOptions.getJSObject("subtitles");
+        JSObject subtitleOptions = extraOptions != null ? extraOptions.getJSObject("subtitles") : null;
 
         DisplayMetrics metrics = bridge.getContext().getResources().getDisplayMetrics();
 
