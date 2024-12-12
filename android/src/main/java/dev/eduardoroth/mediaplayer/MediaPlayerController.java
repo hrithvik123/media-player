@@ -29,7 +29,6 @@ import androidx.mediarouter.media.MediaRouter;
 
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastState;
-import com.google.android.gms.cast.framework.CastStateListener;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
@@ -38,7 +37,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dev.eduardoroth.mediaplayer.MediaPlayerNotificationCenter.NOTIFICATION_TYPE;
-import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.MediaItem;
 import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
@@ -66,7 +64,7 @@ public class MediaPlayerController {
 
     private Player _activePlayer;
 
-    public MediaPlayerController(Context context, String playerId, AndroidOptions android, ExtraOptions extra) {
+    public MediaPlayerController(Context context, String playerId, ExtraOptions extra) {
         _layoutId = playerId.chars().reduce(0, Integer::sum);
         _playerId = playerId;
         _extra = extra;

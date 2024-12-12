@@ -40,7 +40,6 @@ public class MediaPlayerContainer extends Fragment {
     private MediaPlayerController _playerController;
     private MediaPlayerControllerView _playerControllerEmbeddedView;
     private MediaPlayerControllerView _playerControllerFullscreenView;
-    private MediaPlayerControllerView _playerControllerPictureInPictureView;
     private final String _url;
     private final String _playerId;
     private final Rect _sourceRectHint = new Rect();
@@ -88,12 +87,8 @@ public class MediaPlayerContainer extends Fragment {
 
         _mediaPlayerState.pipState.observe(state -> {
             switch (state) {
-                case ACTIVE -> {
-                    MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", true).build());
-                }
-                case INACTIVE -> {
-                    MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", false).build());
-                }
+                case ACTIVE -> MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", true).build());
+                case INACTIVE -> MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", false).build());
                 case WILL_ENTER -> {
                     view.findViewById(R.id.MediaPlayerEmbeddedPiP).setVisibility(View.VISIBLE);
 
@@ -123,12 +118,8 @@ public class MediaPlayerContainer extends Fragment {
         ActionBar actionBar = getSupportActionBar();
         _mediaPlayerState.fullscreenState.observe(state -> {
             switch (state) {
-                case ACTIVE -> {
-                    MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", true).build());
-                }
-                case INACTIVE -> {
-                    MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", false).build());
-                }
+                case ACTIVE -> MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", true).build());
+                case INACTIVE -> MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", false).build());
                 case WILL_ENTER -> {
                     view.findViewById(R.id.MediaPlayerFullscreenContainer).getGlobalVisibleRect(_sourceRectHint);
                     _mediaPlayerState.sourceRectHint.set(_sourceRectHint);
@@ -187,13 +178,13 @@ public class MediaPlayerContainer extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         View containerView = inflater.inflate(R.layout.media_player_container, container, false);
 
-        _playerController = new MediaPlayerController(requireContext(), _playerId, _android, _extra);
+        _playerController = new MediaPlayerController(requireContext(), _playerId, _extra);
         _playerController.addMediaItem(new MediaItem(Uri.parse(_url), _extra));
 
         _mediaPlayerState.playerController.set(_playerController);
 
-        _playerControllerEmbeddedView = new MediaPlayerControllerView(_playerId, MEDIA_PLAYER_VIEW_TYPE.EMBEDDED);
-        _playerControllerFullscreenView = new MediaPlayerControllerView(_playerId, MEDIA_PLAYER_VIEW_TYPE.FULLSCREEN);
+        _playerControllerEmbeddedView = new MediaPlayerControllerView(_playerId);
+        _playerControllerFullscreenView = new MediaPlayerControllerView(_playerId);
 
         View embeddedView = containerView.findViewById(R.id.MediaPlayerEmbeddedContainer);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(_android.width, _android.height);
@@ -243,7 +234,7 @@ public class MediaPlayerContainer extends Fragment {
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         _playerController.destroy();
         super.onDestroy();
     }

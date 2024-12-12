@@ -1,22 +1,18 @@
 package dev.eduardoroth.mediaplayer;
 
-import android.os.Handler;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.getcapacitor.JSObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 
 public class MediaPlayerNotificationCenter extends ViewModel {
-    public static enum NOTIFICATION_TYPE {
+    public enum NOTIFICATION_TYPE {
         MEDIA_PLAYER_READY {
             @NonNull
             @Override

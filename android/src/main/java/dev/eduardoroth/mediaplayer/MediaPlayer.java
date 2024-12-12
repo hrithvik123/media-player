@@ -1,5 +1,7 @@
 package dev.eduardoroth.mediaplayer;
 
+import android.util.Log;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.media3.common.C;
@@ -7,6 +9,8 @@ import androidx.media3.common.util.UnstableApi;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
+
+import java.io.File;
 
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
@@ -32,7 +36,8 @@ public class MediaPlayer {
             ret.put("result", false);
             ret.put("message", "Player with id " + playerId + " is already created");
         } catch (Error err) {
-            MediaPlayerContainer playerContainer = new MediaPlayerContainer(_currentActivity, url, playerId, android, extra);
+            extra.poster = extra.poster != null ? getFinalPath(extra.poster) : null;
+            MediaPlayerContainer playerContainer = new MediaPlayerContainer(_currentActivity, getFinalPath(url), playerId, android, extra);
             _currentActivity.getSupportFragmentManager().beginTransaction().add(R.id.MediaPlayerFragmentContainerView, playerContainer, playerId).commit();
             ret.put("result", true);
             ret.put("value", playerId);
@@ -254,5 +259,28 @@ public class MediaPlayer {
         ret.put("result", true);
         ret.put("value", "[]");
         call.resolve(ret);
+    }
+
+    private String getFinalPath(String url) {
+        if (url == null) {
+            return null;
+        }
+        String path = null;
+        if (url.startsWith("file:///")) {
+            return url;
+        } else if (url.startsWith("application") || url.contains("_capacitor_file_")) {
+            String filesDir = _currentActivity.getFilesDir() + "/";
+            path = filesDir + url.substring(url.lastIndexOf("files/") + 6);
+            File file = new File(path);
+            if (!file.exists()) {
+                Log.e("Media Player", "File not found");
+                path = null;
+            }
+        } else if (url.contains("assets")) {
+            path = "file:///android_asset/" + url;
+        } else if (url.startsWith("http")) {
+            path = url;
+        }
+        return path;
     }
 }

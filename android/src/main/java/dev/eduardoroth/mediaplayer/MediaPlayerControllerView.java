@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -32,28 +31,21 @@ import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 
 @UnstableApi
 public class MediaPlayerControllerView extends Fragment {
-    public static enum MEDIA_PLAYER_VIEW_TYPE {
+    public enum MEDIA_PLAYER_VIEW_TYPE {
         FULLSCREEN, EMBEDDED,
     }
 
     private final MediaPlayerState mediaPlayerState;
-    private final String _playerId;
     private final MediaPlayerController _playerController;
     private final AndroidOptions _android;
     private final ExtraOptions _extra;
     private PlayerView playerView;
     private MediaRouteButton castButton;
-    private ImageButton pipButton;
     private ImageButton fullscreenToggle;
     private Drawable artwork;
-    private final DisplayMetrics displayMetrics = new DisplayMetrics();
-    private final MEDIA_PLAYER_VIEW_TYPE _viewType;
 
-    public MediaPlayerControllerView(String playerId, MEDIA_PLAYER_VIEW_TYPE viewType) {
-        _playerId = playerId;
-        _viewType = viewType;
-
-        mediaPlayerState = MediaPlayerStateProvider.getState(_playerId);
+    public MediaPlayerControllerView(String playerId) {
+        mediaPlayerState = MediaPlayerStateProvider.getState(playerId);
         _playerController = mediaPlayerState.playerController.get();
         _android = mediaPlayerState.androidOptions.get();
         _extra = mediaPlayerState.extraOptions.get();
@@ -103,7 +95,7 @@ public class MediaPlayerControllerView extends Fragment {
             CastButtonFactory.setUpMediaRouteButton(requireContext(), castButton);
         }
 
-        pipButton = extraControls.findViewById(R.id.pip_button);
+        ImageButton pipButton = extraControls.findViewById(R.id.pip_button);
         if (mediaPlayerState.canUsePiP.get()) {
             pipButton.setVisibility(View.VISIBLE);
             pipButton.setOnClickListener(view -> mediaPlayerState.pipState.set(MediaPlayerState.UI_STATE.WILL_ENTER));

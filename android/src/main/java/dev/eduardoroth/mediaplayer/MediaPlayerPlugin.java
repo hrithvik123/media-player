@@ -13,8 +13,6 @@ import androidx.media3.common.util.UnstableApi;
 
 import org.json.JSONException;
 
-import java.io.File;
-
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.SubtitleOptions;
@@ -99,7 +97,7 @@ public class MediaPlayerPlugin extends Plugin {
         } catch (JSONException ignored) {
         }
 
-        ExtraOptions extra = new ExtraOptions(extraOptions.getString("title"), extraOptions.getString("subtitle"), getFilePath(extraOptions.getString("poster", null)), extraOptions.getString("artist"), rate, subtitles, extraOptions.optBoolean("autoPlayWhenReady", false), extraOptions.optBoolean("loopOnEnd", false), extraOptions.optBoolean("showControls", true), extraOptions.getJSObject("headers"));
+        ExtraOptions extra = new ExtraOptions(extraOptions.getString("title"), extraOptions.getString("subtitle"), extraOptions.getString("poster", null), extraOptions.getString("artist"), rate, subtitles, extraOptions.optBoolean("autoPlayWhenReady", false), extraOptions.optBoolean("loopOnEnd", false), extraOptions.optBoolean("showControls", true), extraOptions.getJSObject("headers"));
         bridge.getActivity().runOnUiThread(() -> implementation.create(call, playerId, url, android, extra));
     }
 
@@ -324,32 +322,6 @@ public class MediaPlayerPlugin extends Plugin {
     @PluginMethod
     public void removeAll(final PluginCall call) {
         bridge.getActivity().runOnUiThread(() -> implementation.removeAll(call));
-    }
-
-    private String getFilePath(String url) {
-        if (url == null) {
-            return null;
-        }
-        if (url.startsWith("file:///")) {
-            return url;
-        }
-        String path = null;
-        String http = url.substring(0, 4);
-        if (http.equals("http")) {
-            path = url;
-        } else {
-            if (url.startsWith("application")) {
-                String filesDir = getContext().getFilesDir() + "/";
-                path = filesDir + url.substring(url.lastIndexOf("files/") + 6);
-                File file = new File(path);
-                if (!file.exists()) {
-                    path = null;
-                }
-            } else if (url.contains("assets")) {
-                path = "file:///android_asset/" + url;
-            }
-        }
-        return path;
     }
 
 }
