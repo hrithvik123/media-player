@@ -218,7 +218,12 @@ public class MediaPlayerController {
     }
 
     private void createPlayerNotificationManager() {
-        _playerNotificationManager = new PlayerNotificationManager.Builder(_context, _layoutId, _context.getString(R.string.channel_id)).setChannelNameResourceId(R.string.channel_name).setChannelDescriptionResourceId(R.string.channel_description).setChannelImportance(NotificationManager.IMPORTANCE_DEFAULT).setNotificationListener(new PlayerNotificationManager.NotificationListener() {
+        _playerNotificationManager = new PlayerNotificationManager
+                .Builder(_context, _layoutId, _context.getString(R.string.channel_id))
+                .setChannelNameResourceId(R.string.channel_name)
+                .setChannelDescriptionResourceId(R.string.channel_description)
+                .setChannelImportance(NotificationManager.IMPORTANCE_LOW)
+                .setNotificationListener(new PlayerNotificationManager.NotificationListener() {
             @Override
             public void onNotificationCancelled(int notificationId, boolean dismissedByUser) {
                 PlayerNotificationManager.NotificationListener.super.onNotificationCancelled(notificationId, dismissedByUser);
