@@ -251,7 +251,17 @@ public class MediaPlayerController {
 
     @OptIn(markerClass = UnstableApi.class)
     private ExoPlayer createExoPlayer() {
-        ExoPlayer exoPlayer = new ExoPlayer.Builder(_context).setName(_playerId).setTrackSelector(new DefaultTrackSelector(_context, new AdaptiveTrackSelection.Factory())).setLoadControl(new DefaultLoadControl()).setBandwidthMeter(new DefaultBandwidthMeter.Builder(_context).build()).setDeviceVolumeControlEnabled(false).setSeekBackIncrementMs(MediaPlayer.VIDEO_STEP).setSeekForwardIncrementMs(MediaPlayer.VIDEO_STEP).setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT).build();
+        ExoPlayer exoPlayer = new ExoPlayer
+                .Builder(_context)
+                .setName(_playerId)
+                .setTrackSelector(new DefaultTrackSelector(_context, new AdaptiveTrackSelection.Factory()))
+                .setLoadControl(new DefaultLoadControl())
+                .setBandwidthMeter(new DefaultBandwidthMeter.Builder(_context).build())
+                .setDeviceVolumeControlEnabled(true)
+                .setSeekBackIncrementMs(MediaPlayer.VIDEO_STEP)
+                .setSeekForwardIncrementMs(MediaPlayer.VIDEO_STEP)
+                .setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT)
+                .build();
 
         exoPlayer.setRepeatMode(_extra.loopOnEnd ? Player.REPEAT_MODE_ONE : Player.REPEAT_MODE_OFF);
         exoPlayer.setAudioAttributes(new AudioAttributes.Builder().setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).setAllowedCapturePolicy(C.ALLOW_CAPTURE_BY_SYSTEM).setUsage(C.USAGE_MEDIA).build(), true);
