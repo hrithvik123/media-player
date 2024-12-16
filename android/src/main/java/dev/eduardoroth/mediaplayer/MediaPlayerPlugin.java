@@ -59,10 +59,10 @@ public class MediaPlayerPlugin extends Plugin {
 
         DisplayMetrics metrics = bridge.getContext().getResources().getDisplayMetrics();
 
-        Integer paramTop = androidOptions.getInteger("top", null);
-        Integer paramStart = androidOptions.getInteger("start", null);
-        Integer paramWidth = androidOptions.getInteger("width", null);
-        Integer paramHeight = androidOptions.getInteger("height", null);
+        Integer paramTop = androidOptions != null ? androidOptions.getInteger("top", null) : null;
+        Integer paramStart = androidOptions != null ? androidOptions.getInteger("start", null) : null;
+        Integer paramWidth = androidOptions != null ? androidOptions.getInteger("width", null) : null;
+        Integer paramHeight = androidOptions != null ? androidOptions.getInteger("height", null) : null;
 
         int marginTop = paramTop == null ? 0 : (int) (paramTop * metrics.scaledDensity);
         int marginStart = paramStart == null ? 0 : (int) (paramStart * metrics.scaledDensity);
@@ -70,12 +70,12 @@ public class MediaPlayerPlugin extends Plugin {
         int videoHeight = paramHeight == null ? (videoWidth * 9 / 16) : (int) (paramHeight * metrics.scaledDensity);
 
         AndroidOptions android = new AndroidOptions(
-                androidOptions.optBoolean("enableChromecast", true),
-                androidOptions.optBoolean("enablePiP", true),
-                androidOptions.optBoolean("enableBackgroundPlay", true),
-                androidOptions.optBoolean("openInFullscreen", false),
-                androidOptions.optBoolean("automaticallyEnterPiP", false),
-                androidOptions.optBoolean("fullscreenOnLandscape", true),
+                androidOptions == null || androidOptions.optBoolean("enableChromecast", true),
+                androidOptions == null || androidOptions.optBoolean("enablePiP", true),
+                androidOptions == null || androidOptions.optBoolean("enableBackgroundPlay", true),
+                androidOptions != null && androidOptions.optBoolean("openInFullscreen", false),
+                androidOptions != null && androidOptions.optBoolean("automaticallyEnterPiP", false),
+                androidOptions == null || androidOptions.optBoolean("fullscreenOnLandscape", true),
                 marginTop,
                 marginStart,
                 videoWidth,
@@ -94,10 +94,20 @@ public class MediaPlayerPlugin extends Plugin {
         double rate = 1;
         try {
             rate = extraOptions.getDouble("rate");
-        } catch (JSONException ignored) {
+        } catch (NullPointerException | JSONException ignored) {
         }
 
-        ExtraOptions extra = new ExtraOptions(extraOptions.getString("title"), extraOptions.getString("subtitle"), extraOptions.getString("poster", null), extraOptions.getString("artist"), rate, subtitles, extraOptions.optBoolean("autoPlayWhenReady", false), extraOptions.optBoolean("loopOnEnd", false), extraOptions.optBoolean("showControls", true), extraOptions.getJSObject("headers"));
+        ExtraOptions extra = new ExtraOptions(
+                extraOptions != null ? extraOptions.getString("title") : null,
+                extraOptions != null ? extraOptions.getString("subtitle") : null,
+                extraOptions != null ? extraOptions.getString("poster", null) : null,
+                extraOptions != null ? extraOptions.getString("artist", null) : null,
+                rate,
+                subtitles,
+                extraOptions != null && extraOptions.optBoolean("autoPlayWhenReady", false),
+                extraOptions != null && extraOptions.optBoolean("loopOnEnd", false),
+                extraOptions == null || extraOptions.optBoolean("showControls", true),
+                extraOptions != null ? extraOptions.getJSObject("headers") : null);
         bridge.getActivity().runOnUiThread(() -> implementation.create(call, playerId, url, android, extra));
     }
 
