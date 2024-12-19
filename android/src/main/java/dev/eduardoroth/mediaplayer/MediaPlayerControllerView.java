@@ -35,7 +35,7 @@ public class MediaPlayerControllerView extends Fragment {
         FULLSCREEN, EMBEDDED,
     }
 
-    private final MediaPlayerState mediaPlayerState;
+    private final MediaPlayerState _mediaPlayerState;
     private final MediaPlayerController _playerController;
     private final AndroidOptions _android;
     private final ExtraOptions _extra;
@@ -45,33 +45,33 @@ public class MediaPlayerControllerView extends Fragment {
     private Drawable artwork;
 
     public MediaPlayerControllerView(String playerId) {
-        mediaPlayerState = MediaPlayerStateProvider.getState(playerId);
-        _playerController = mediaPlayerState.playerController.get();
-        _android = mediaPlayerState.androidOptions.get();
-        _extra = mediaPlayerState.extraOptions.get();
+        _mediaPlayerState = MediaPlayerStateProvider.getState(playerId);
+        _playerController = _mediaPlayerState.playerController.get();
+        _android = _mediaPlayerState.androidOptions.get();
+        _extra = _mediaPlayerState.extraOptions.get();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mediaPlayerState.fullscreenState.observe(state -> {
+        _mediaPlayerState.fullscreenState.observe(state -> {
             switch (state) {
                 case ACTIVE -> fullscreenToggle.setImageResource(R.drawable.ic_fullscreen_exit);
                 case INACTIVE -> fullscreenToggle.setImageResource(R.drawable.ic_fullscreen_enter);
             }
         });
-        mediaPlayerState.pipState.observe(state -> {
+        _mediaPlayerState.pipState.observe(state -> {
             switch (state) {
                 case ACTIVE -> playerView.setUseController(false);
                 case INACTIVE -> playerView.setUseController(_extra.showControls);
 
             }
         });
-        mediaPlayerState.canCast.observe(isCastAvailable -> {
+        _mediaPlayerState.canCast.observe(isCastAvailable -> {
             castButton.setVisibility(isCastAvailable ? View.VISIBLE : View.GONE);
             castButton.setEnabled(isCastAvailable);
         });
-        mediaPlayerState.showSubtitles.observe(showSubtitles -> playerView.setShowSubtitleButton(showSubtitles));
+        _mediaPlayerState.showSubtitles.observe(showSubtitles -> playerView.setShowSubtitleButton(showSubtitles));
     }
 
     @Override
@@ -96,18 +96,18 @@ public class MediaPlayerControllerView extends Fragment {
         }
 
         ImageButton pipButton = extraControls.findViewById(R.id.pip_button);
-        if (mediaPlayerState.canUsePiP.get()) {
+        if (_mediaPlayerState.canUsePiP.get()) {
             pipButton.setVisibility(View.VISIBLE);
-            pipButton.setOnClickListener(view -> mediaPlayerState.pipState.set(MediaPlayerState.UI_STATE.WILL_ENTER));
+            pipButton.setOnClickListener(view -> _mediaPlayerState.pipState.set(MediaPlayerState.UI_STATE.WILL_ENTER));
         }
 
         fullscreenToggle = extraControls.findViewById(R.id.toggle_fullscreen);
         fullscreenToggle.setOnClickListener(view -> {
-            switch (mediaPlayerState.fullscreenState.get()) {
+            switch (_mediaPlayerState.fullscreenState.get()) {
                 case ACTIVE ->
-                        mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_EXIT);
+                        _mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_EXIT);
                 case INACTIVE ->
-                        mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_ENTER);
+                        _mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_ENTER);
             }
         });
 
@@ -147,42 +147,41 @@ public class MediaPlayerControllerView extends Fragment {
                         if (videoPosition < duration - MediaPlayer.VIDEO_STEP) {
                             activePlayer.seekTo(videoPosition + MediaPlayer.VIDEO_STEP);
                         }
-                        break;
+                        return true;
                     case KeyEvent.KEYCODE_DPAD_LEFT:
                         if (videoPosition - MediaPlayer.VIDEO_STEP > 0) {
                             activePlayer.seekTo(videoPosition - MediaPlayer.VIDEO_STEP);
                         } else {
                             activePlayer.seekTo(0);
                         }
-                        break;
+                        return true;
                     case KeyEvent.KEYCODE_DPAD_CENTER:
                         if (activePlayer.isPlaying()) {
                             activePlayer.pause();
                         } else {
                             activePlayer.play();
                         }
-                        break;
+                        return true;
                     case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
                         if (videoPosition < duration - (MediaPlayer.VIDEO_STEP * 2)) {
                             activePlayer.seekTo(videoPosition + (MediaPlayer.VIDEO_STEP * 2));
                         }
-                        break;
+                        return true;
                     case KeyEvent.KEYCODE_MEDIA_REWIND:
                         if (videoPosition - (MediaPlayer.VIDEO_STEP * 2) > 0) {
                             activePlayer.seekTo(videoPosition - (MediaPlayer.VIDEO_STEP * 2));
                         } else {
                             activePlayer.seekTo(0);
                         }
-                        break;
+                        return true;
                 }
             }
-            return true;
+            return false;
         });
-        playerView.setFocusableInTouchMode(true);
 
         playerView.setPlayer(_playerController.getActivePlayer());
 
-        mediaPlayerState.isPlayerReady.set(true);
+        _mediaPlayerState.isPlayerReady.set(true);
 
         return fragmentView;
     }

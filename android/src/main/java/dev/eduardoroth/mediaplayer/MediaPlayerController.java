@@ -222,16 +222,16 @@ public class MediaPlayerController {
                 .setChannelDescriptionResourceId(R.string.channel_description)
                 .setChannelImportance(NotificationManager.IMPORTANCE_LOW)
                 .setNotificationListener(new PlayerNotificationManager.NotificationListener() {
-            @Override
-            public void onNotificationCancelled(int notificationId, boolean dismissedByUser) {
-                PlayerNotificationManager.NotificationListener.super.onNotificationCancelled(notificationId, dismissedByUser);
-            }
+                    @Override
+                    public void onNotificationCancelled(int notificationId, boolean dismissedByUser) {
+                        PlayerNotificationManager.NotificationListener.super.onNotificationCancelled(notificationId, dismissedByUser);
+                    }
 
-            @Override
-            public void onNotificationPosted(int notificationId, @NonNull Notification notification, boolean ongoing) {
-                PlayerNotificationManager.NotificationListener.super.onNotificationPosted(notificationId, notification, ongoing);
-            }
-        }).build();
+                    @Override
+                    public void onNotificationPosted(int notificationId, @NonNull Notification notification, boolean ongoing) {
+                        PlayerNotificationManager.NotificationListener.super.onNotificationPosted(notificationId, notification, ongoing);
+                    }
+                }).build();
         _playerNotificationManager.setBadgeIconType(BADGE_ICON_LARGE);
         _playerNotificationManager.setShowPlayButtonIfPlaybackIsSuppressed(true);
         _playerNotificationManager.setUseChronometer(true);
@@ -262,7 +262,13 @@ public class MediaPlayerController {
                 .build();
 
         exoPlayer.setRepeatMode(_extra.loopOnEnd ? Player.REPEAT_MODE_ONE : Player.REPEAT_MODE_OFF);
-        exoPlayer.setAudioAttributes(new AudioAttributes.Builder().setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).setAllowedCapturePolicy(C.ALLOW_CAPTURE_BY_SYSTEM).setUsage(C.USAGE_MEDIA).build(), true);
+        exoPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                        .setAllowedCapturePolicy(C.ALLOW_CAPTURE_BY_SYSTEM)
+                        .setUsage(C.USAGE_MEDIA)
+                        .build(), true
+        );
 
         exoPlayer.addListener(new Player.Listener() {
             @Override
