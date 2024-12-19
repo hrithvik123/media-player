@@ -5,5 +5,4 @@
     <application
         android:enableOnBackInvokedCallback="true"
         tools:ignore="UnusedAttribute" />
-
 </manifest>
