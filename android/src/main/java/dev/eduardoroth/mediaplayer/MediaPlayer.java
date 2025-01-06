@@ -1,14 +1,20 @@
 package dev.eduardoroth.mediaplayer;
 
+import android.content.ComponentName;
+import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.media3.common.C;
 import androidx.media3.common.util.UnstableApi;
+import androidx.media3.session.MediaController;
+import androidx.media3.session.SessionToken;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 
@@ -18,7 +24,6 @@ import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 
-@UnstableApi
 public class MediaPlayer {
     public static long VIDEO_STEP = 10000;
     private final AppCompatActivity _currentActivity;
@@ -27,22 +32,39 @@ public class MediaPlayer {
         _currentActivity = currentActivity;
     }
 
-    @UnstableApi
+    @OptIn(markerClass = UnstableApi.class)
     public void create(PluginCall call, String playerId, String url, AndroidOptions android, ExtraOptions extra) {
-        JSObject ret = new JSObject();
-        ret.put("method", "create");
-        try {
-            MediaPlayerStateProvider.getState(playerId);
-            ret.put("result", false);
-            ret.put("message", "Player with id " + playerId + " is already created");
-        } catch (Error err) {
-            extra.poster = extra.poster != null ? getFinalPath(extra.poster) : null;
-            MediaPlayerContainer playerContainer = new MediaPlayerContainer(_currentActivity, getFinalPath(url), playerId, android, extra);
-            _currentActivity.getSupportFragmentManager().beginTransaction().add(R.id.MediaPlayerFragmentContainerView, playerContainer, playerId).commit();
-            ret.put("result", true);
-            ret.put("value", playerId);
-        }
-        call.resolve(ret);
+        Bundle connectionHints = new Bundle();
+        connectionHints.putString("playerId", playerId);
+        connectionHints.putString("videoUrl", url);
+        connectionHints.putSerializable("android", android);
+        extra.poster = extra.poster != null ? getFinalPath(extra.poster) : null;
+        connectionHints.putSerializable("extra", extra);
+
+        SessionToken sessionToken = new SessionToken(
+                _currentActivity.getApplicationContext(),
+                new ComponentName(_currentActivity.getApplicationContext(), MediaPlayerService.class)
+        );
+        ListenableFuture<MediaController> futureController = new MediaController
+                .Builder(_currentActivity.getApplicationContext(), sessionToken)
+                .setConnectionHints(connectionHints)
+                .buildAsync();
+
+        futureController.addListener(() -> {
+            JSObject ret = new JSObject();
+            ret.put("method", "create");
+            try {
+                _currentActivity.getSupportFragmentManager().beginTransaction().add(R.id.MediaPlayerFragmentContainerView, new MediaPlayerContainer(futureController.get(), playerId), playerId).commit();
+                ret.put("result", true);
+                ret.put("value", playerId);
+                call.resolve(ret);
+            } catch (Exception | Error futureError) {
+                ret.put("result", false);
+                ret.put("message", "An error occurred while creating player with id " + playerId);
+                Log.e("MEDIA PLAYER ROTH", futureError.toString());
+                call.resolve(ret);
+            }
+        }, _currentActivity.getMainExecutor());
     }
 
     public void play(PluginCall call, String playerId) {
@@ -50,7 +72,7 @@ public class MediaPlayer {
         ret.put("method", "play");
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-            playerState.playerController.get().play();
+            playerState.mediaController.get().play();
             ret.put("result", true);
             ret.put("value", true);
         } catch (Error err) {
@@ -65,7 +87,7 @@ public class MediaPlayer {
         ret.put("method", "pause");
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-            playerState.playerController.get().pause();
+            playerState.mediaController.get().pause();
             ret.put("result", true);
             ret.put("value", true);
         } catch (Error err) {
@@ -80,7 +102,7 @@ public class MediaPlayer {
         ret.put("method", "getDuration");
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-            long duration = playerState.playerController.get().getDuration();
+            long duration = playerState.mediaController.get().getDuration();
             ret.put("result", true);
             ret.put("value", duration == C.TIME_UNSET ? 0 : (duration / 1000));
         } catch (Error err) {
@@ -95,7 +117,7 @@ public class MediaPlayer {
         ret.put("method", "getCurrentTime");
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-            long currentTime = playerState.playerController.get().getCurrentTime();
+            long currentTime = playerState.mediaController.get().getCurrentPosition();
             ret.put("result", true);
             ret.put("value", currentTime == C.TIME_UNSET ? 0 : (currentTime / 1000));
         } catch (Error err) {
@@ -109,10 +131,14 @@ public class MediaPlayer {
         JSObject ret = new JSObject();
         ret.put("method", "setCurrentTime");
         try {
-            MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-            long updatedTime = playerState.playerController.get().setCurrentTime(time);
+            MediaController controller = MediaPlayerStateProvider.getState(playerId).mediaController.get();
+
+            long duration = controller.getDuration();
+            long currentTime = controller.getCurrentPosition();
+            long seekPosition = currentTime == C.TIME_UNSET ? 0 : Math.min(Math.max(0, time * 1000), duration == C.TIME_UNSET ? 0 : duration);
+            controller.seekTo(seekPosition);
             ret.put("result", true);
-            ret.put("value", updatedTime);
+            ret.put("value", seekPosition);
         } catch (Error err) {
             ret.put("result", false);
             ret.put("message", "Player not found");
@@ -126,7 +152,7 @@ public class MediaPlayer {
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
             ret.put("result", true);
-            ret.put("value", playerState.playerController.get().isPlaying());
+            ret.put("value", playerState.mediaController.get().isPlaying());
         } catch (Error err) {
             ret.put("result", false);
             ret.put("message", "Player not found");
@@ -140,7 +166,7 @@ public class MediaPlayer {
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
             ret.put("result", true);
-            ret.put("value", playerState.playerController.get().isMuted());
+            ret.put("value", playerState.mediaController.get().getVolume() == 0);
         } catch (Error err) {
             ret.put("result", false);
             ret.put("message", "Player not found");
@@ -153,7 +179,7 @@ public class MediaPlayer {
         ret.put("method", "mute");
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-            playerState.playerController.get().mute();
+            playerState.mediaController.get().setVolume(0);
             ret.put("result", true);
             ret.put("value", true);
         } catch (Error err) {
@@ -169,7 +195,7 @@ public class MediaPlayer {
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
             ret.put("result", true);
-            ret.put("value", playerState.playerController.get().getVolume());
+            ret.put("value", playerState.mediaController.get().getVolume());
         } catch (Error err) {
             ret.put("result", false);
             ret.put("message", "Player not found");
@@ -182,7 +208,7 @@ public class MediaPlayer {
         ret.put("method", "setVolume");
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-            playerState.playerController.get().setVolume(volume.floatValue());
+            playerState.mediaController.get().setVolume(volume.floatValue());
             ret.put("result", true);
             ret.put("value", volume);
         } catch (Error err) {
@@ -198,7 +224,7 @@ public class MediaPlayer {
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
             ret.put("result", true);
-            ret.put("value", playerState.playerController.get().getRate());
+            ret.put("value", playerState.mediaController.get().getPlaybackParameters().speed);
         } catch (Error err) {
             ret.put("result", false);
             ret.put("message", "Player not found");
@@ -211,7 +237,7 @@ public class MediaPlayer {
         ret.put("method", "setRate");
         try {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-            playerState.playerController.get().setRate(rate.floatValue());
+            playerState.mediaController.get().setPlaybackSpeed(rate.floatValue());
             ret.put("result", true);
             ret.put("value", rate);
         } catch (Error err) {
@@ -225,10 +251,9 @@ public class MediaPlayer {
         JSObject ret = new JSObject();
         ret.put("method", "remove");
         try {
-            MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
+            MediaPlayerState state = MediaPlayerStateProvider.getState(playerId);
+            state.mediaController.get().stop();
             Fragment playerFragment = _currentActivity.getSupportFragmentManager().findFragmentByTag(playerId);
-            playerState.playerController.get().destroy();
-            MediaPlayerStateProvider.clearState(playerId);
             if (playerFragment != null) {
                 _currentActivity.getSupportFragmentManager().beginTransaction().remove(playerFragment).commit();
             }
@@ -248,10 +273,9 @@ public class MediaPlayer {
             _currentActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
             try {
                 MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-                playerState.playerController.get().destroy();
+                playerState.mediaController.get().stop();
             } catch (Error ignored) {
             }
-            MediaPlayerStateProvider.clearState(playerId);
             MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED).build());
         });
         JSObject ret = new JSObject();
@@ -270,14 +294,14 @@ public class MediaPlayer {
             return url;
         } else if (url.startsWith("application") || url.contains("_capacitor_file_")) {
             String filesDir = _currentActivity.getFilesDir() + "/";
-            path = filesDir + url.substring(url.lastIndexOf("files/") + 6);
+            path = filesDir + url.substring(url.lastIndexOf("files/") + "files/".length());
             File file = new File(path);
             if (!file.exists()) {
                 Log.e("Media Player", "File not found");
                 path = null;
             }
-        } else if (url.contains("assets")) {
-            path = "file:///android_asset/" + url;
+        } else if (url.contains("public/assets")) {
+            path = "/android_asset/" + url;
         } else if (url.startsWith("http")) {
             path = url;
         }

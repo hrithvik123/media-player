@@ -1,5 +1,6 @@
 package dev.eduardoroth.mediaplayer.models;
 
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
 import androidx.media3.common.C;
@@ -7,6 +8,8 @@ import androidx.media3.common.MediaItem.SubtitleConfiguration;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.MimeTypes;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -17,7 +20,11 @@ public class MediaItem {
     private boolean _hasSubtitles = false;
 
     public MediaItem(Uri url, ExtraOptions extra) {
-        MediaMetadata.Builder movieMetadataBuilder = new MediaMetadata.Builder().setTitle(extra.title).setSubtitle(extra.subtitle).setArtist(extra.artist).setMediaType(MediaMetadata.MEDIA_TYPE_MOVIE);
+        MediaMetadata.Builder movieMetadataBuilder = new MediaMetadata.Builder()
+                .setTitle(extra.title)
+                .setSubtitle(extra.subtitle)
+                .setArtist(extra.artist)
+                .setMediaType(MediaMetadata.MEDIA_TYPE_VIDEO);
         if (extra.poster != null) {
             movieMetadataBuilder.setArtworkUri(Uri.parse(extra.poster));
         }

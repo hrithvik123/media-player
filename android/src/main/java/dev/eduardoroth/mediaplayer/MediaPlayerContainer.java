@@ -5,72 +5,74 @@ import static dev.eduardoroth.mediaplayer.state.MediaPlayerState.*;
 import android.app.PictureInPictureParams;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Rational;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.media3.common.util.UnstableApi;
+import androidx.media3.session.MediaController;
+import androidx.media3.ui.CaptionStyleCompat;
+import androidx.media3.ui.PlayerView;
+import androidx.media3.ui.SubtitleView;
+import androidx.mediarouter.app.MediaRouteButton;
 
-import dev.eduardoroth.mediaplayer.MediaPlayerControllerView.MEDIA_PLAYER_VIEW_TYPE;
+import com.google.android.gms.cast.framework.CastButtonFactory;
+
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
-import dev.eduardoroth.mediaplayer.models.MediaItem;
 import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 
-@UnstableApi
 public class MediaPlayerContainer extends Fragment {
 
-    private final AndroidOptions _android;
-    private final ExtraOptions _extra;
-    private final MediaPlayerState _mediaPlayerState;
-    private MediaPlayerController _playerController;
-    private MediaPlayerControllerView _playerControllerEmbeddedView;
-    private MediaPlayerControllerView _playerControllerFullscreenView;
-    private final String _url;
+    private AndroidOptions _android;
+    private ExtraOptions _extra;
+    private MediaPlayerState _mediaPlayerState;
+    private MediaController _playerController;
     private final String _playerId;
     private final Rect _sourceRectHint = new Rect();
+    private PlayerView _embeddedPlayerView;
+    private PlayerView _fullscreenPlayerView;
+    private FrameLayout _embeddedView;
+    private FrameLayout _fullscreenView;
 
-    public MediaPlayerContainer(AppCompatActivity activity, String url, String playerId, AndroidOptions android, ExtraOptions extra) {
-        _android = android;
-        _extra = extra;
+    public MediaPlayerContainer(MediaController playerController, String playerId) {
         _playerId = playerId;
-        _url = url;
-        _mediaPlayerState = MediaPlayerStateProvider.getState(playerId, activity);
-
-        _mediaPlayerState.androidOptions.set(android);
-        _mediaPlayerState.extraOptions.set(extra);
+        _playerController = playerController;
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        _mediaPlayerState.canUsePiP.set(_android.enablePiP && requireContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE));
-        _mediaPlayerState.isPlayerReady.observe(state -> {
-            if (state) {
-                view.findViewById(R.id.MediaPlayerEmbeddedLoading).setVisibility(View.GONE);
-            }
-        });
-
+    public void onCreate(Bundle savedInstanceBundle) {
+        super.onCreate(savedInstanceBundle);
+        _mediaPlayerState = MediaPlayerStateProvider.getState(_playerId);
+        _mediaPlayerState.mediaController.set(_playerController);
+        _android = _mediaPlayerState.androidOptions.get();
+        _extra = _mediaPlayerState.extraOptions.get();
         requireActivity().addOnPictureInPictureModeChangedListener(state -> {
             if (getLifecycle().getCurrentState() == Lifecycle.State.CREATED) {
                 _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_EXIT);
                 _mediaPlayerState.pipState.set(UI_STATE.WILL_EXIT);
                 if (!_android.enableBackgroundPlay) {
-                    _playerController.getActivePlayer().pause();
+                    _playerController.pause();
                 }
             } else if (getLifecycle().getCurrentState() == Lifecycle.State.STARTED) {
                 if (state.isInPictureInPictureMode()) {
@@ -84,13 +86,28 @@ public class MediaPlayerContainer extends Fragment {
             }
 
         });
+    }
 
+    @OptIn(markerClass = UnstableApi.class)
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedBundleInstance) {
+        super.onViewCreated(view, savedBundleInstance);
+
+        _mediaPlayerState.isPlayerReady.observe(state -> {
+            if (state) {
+                _embeddedView.findViewById(R.id.MediaPlayerEmbeddedLoading).setVisibility(View.GONE);
+            } else {
+                _embeddedView.findViewById(R.id.MediaPlayerEmbeddedLoading).setVisibility(View.VISIBLE);
+            }
+        });
         _mediaPlayerState.pipState.observe(state -> {
             switch (state) {
-                case ACTIVE -> MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", true).build());
-                case INACTIVE -> MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", false).build());
+                case ACTIVE ->
+                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", true).build());
+                case INACTIVE ->
+                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", false).build());
                 case WILL_ENTER -> {
-                    view.findViewById(R.id.MediaPlayerEmbeddedPiP).setVisibility(View.VISIBLE);
+                    _embeddedView.findViewById(R.id.MediaPlayerEmbeddedPiP).setVisibility(View.VISIBLE);
 
                     PictureInPictureParams.Builder pictureInPictureParams = new PictureInPictureParams.Builder().setSourceRectHint(_mediaPlayerState.sourceRectHint.get()).setAspectRatio(new Rational(_android.width, _android.height));
 
@@ -107,27 +124,30 @@ public class MediaPlayerContainer extends Fragment {
                     _mediaPlayerState.pipState.set(UI_STATE.ACTIVE);
                 }
                 case WILL_EXIT -> {
-                    view.findViewById(R.id.MediaPlayerEmbeddedPiP).setVisibility(View.GONE);
+                    _embeddedView.findViewById(R.id.MediaPlayerEmbeddedPiP).setVisibility(View.GONE);
                     _mediaPlayerState.pipState.set(UI_STATE.INACTIVE);
                 }
             }
         });
-
-        int defaultUiVisibility = requireActivity().getWindow().getDecorView().getSystemUiVisibility();
+        View decorView = requireActivity().getWindow().getDecorView();
+        int defaultUiVisibility = decorView.getSystemUiVisibility();
         int fullscreenUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         ActionBar actionBar = getSupportActionBar();
         _mediaPlayerState.fullscreenState.observe(state -> {
             switch (state) {
-                case ACTIVE -> MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", true).build());
-                case INACTIVE -> MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", false).build());
+                case ACTIVE ->
+                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", true).build());
+                case INACTIVE ->
+                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", false).build());
                 case WILL_ENTER -> {
-                    view.findViewById(R.id.MediaPlayerFullscreenContainer).getGlobalVisibleRect(_sourceRectHint);
+                    _embeddedView.findViewById(R.id.MediaPlayerEmbeddedContainer).setVisibility(View.GONE);
+                    _fullscreenView.findViewById(R.id.MediaPlayerFullscreenContainer).setVisibility(View.VISIBLE);
+                    _fullscreenView.findViewById(R.id.MediaPlayerFullscreenContainer).getGlobalVisibleRect(_sourceRectHint);
                     _mediaPlayerState.sourceRectHint.set(_sourceRectHint);
 
-                    getChildFragmentManager().beginTransaction().detach(_playerControllerEmbeddedView).add(R.id.MediaPlayerFullscreenContainer, _playerControllerFullscreenView, "fullscreen").commit();
-                    view.findViewById(R.id.MediaPlayerFullscreenContainer).setVisibility(View.VISIBLE);
+                    PlayerView.switchTargetView(_playerController, _embeddedPlayerView, _fullscreenPlayerView);
 
-                    requireActivity().getWindow().getDecorView().setSystemUiVisibility(fullscreenUiVisibility);
+                    decorView.setSystemUiVisibility(fullscreenUiVisibility);
 
                     if (actionBar != null) {
                         actionBar.hide();
@@ -136,13 +156,14 @@ public class MediaPlayerContainer extends Fragment {
                     _mediaPlayerState.fullscreenState.set(UI_STATE.ACTIVE);
                 }
                 case WILL_EXIT -> {
-                    view.findViewById(R.id.MediaPlayerEmbeddedContainer).getGlobalVisibleRect(_sourceRectHint);
+                    _fullscreenView.findViewById(R.id.MediaPlayerFullscreenContainer).setVisibility(View.GONE);
+                    _embeddedView.findViewById(R.id.MediaPlayerEmbeddedContainer).setVisibility(View.VISIBLE);
+                    _embeddedView.findViewById(R.id.MediaPlayerEmbeddedContainer).getGlobalVisibleRect(_sourceRectHint);
                     _mediaPlayerState.sourceRectHint.set(_sourceRectHint);
 
-                    getChildFragmentManager().beginTransaction().remove(_playerControllerFullscreenView).attach(_playerControllerEmbeddedView).commit();
-                    view.findViewById(R.id.MediaPlayerFullscreenContainer).setVisibility(View.GONE);
+                    PlayerView.switchTargetView(_playerController, _fullscreenPlayerView, _embeddedPlayerView);
 
-                    requireActivity().getWindow().getDecorView().setSystemUiVisibility(defaultUiVisibility);
+                    decorView.setSystemUiVisibility(defaultUiVisibility);
 
                     if (actionBar != null) {
                         actionBar.show();
@@ -163,14 +184,8 @@ public class MediaPlayerContainer extends Fragment {
             }
         });
 
-        getChildFragmentManager().beginTransaction().add(R.id.MediaPlayerEmbeddedPlayer, _playerControllerEmbeddedView, "embedded").commit();
-
-        view.findViewById(R.id.MediaPlayerEmbeddedContainer).getGlobalVisibleRect(_sourceRectHint);
-        _mediaPlayerState.sourceRectHint.set(_sourceRectHint);
-
-        if (_android.openInFullscreen) {
-            _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_ENTER);
-        }
+        _mediaPlayerState.canUsePiP.set(_android.enablePiP && requireContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE));
+        _mediaPlayerState.fullscreenState.set(_android.openInFullscreen ? UI_STATE.WILL_ENTER : UI_STATE.WILL_EXIT);
     }
 
     @Override
@@ -178,28 +193,133 @@ public class MediaPlayerContainer extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         View containerView = inflater.inflate(R.layout.media_player_container, container, false);
 
-        _playerController = new MediaPlayerController(requireContext(), _playerId, _extra);
-        _playerController.addMediaItem(new MediaItem(Uri.parse(_url), _extra));
+        _fullscreenView = containerView.findViewById(R.id.MediaPlayerFullscreenContainer);
+        _embeddedView = containerView.findViewById(R.id.MediaPlayerEmbeddedContainer);
 
-        _mediaPlayerState.playerController.set(_playerController);
-
-        _playerControllerEmbeddedView = new MediaPlayerControllerView(_playerId);
-        _playerControllerFullscreenView = new MediaPlayerControllerView(_playerId);
-
-        View embeddedView = containerView.findViewById(R.id.MediaPlayerEmbeddedContainer);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(_android.width, _android.height);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(_android.width, _android.height, Gravity.FILL);
         params.topMargin = _android.top;
         params.setMarginStart(_android.start);
-        embeddedView.setLayoutParams(params);
+        _embeddedView.setLayoutParams(params);
+
+        _embeddedPlayerView = createPlayerView(inflater, _embeddedView);
+        _fullscreenPlayerView = createPlayerView(inflater, _fullscreenView);
+
+        addPlayerViewListeners(_embeddedPlayerView);
+        addPlayerViewListeners(_fullscreenPlayerView);
+
+        _embeddedPlayerView.setPlayer(_playerController);
 
         return containerView;
     }
 
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        boolean isLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
-        _mediaPlayerState.landscapeState.set(isLandscape ? UI_STATE.ACTIVE : UI_STATE.INACTIVE);
+    @OptIn(markerClass = UnstableApi.class)
+    private PlayerView createPlayerView(@NonNull LayoutInflater inflater, View container) {
+        View videoView = inflater.inflate(R.layout.media_player_controller_view, (ViewGroup) container, true);
+
+        PlayerView _playerView = videoView.findViewById(R.id.MediaPlayerControllerView);
+
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_repeat_toggle).setVisibility(View.GONE);
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_fullscreen).setVisibility(View.GONE);
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_minimal_fullscreen).setVisibility(View.GONE);
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_extra_controls_scroll_view).setVisibility(View.VISIBLE);
+
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_bottom_bar).setVisibility(View.VISIBLE);
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_rew_with_amount).setVisibility(View.VISIBLE);
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_ffwd_with_amount).setVisibility(View.VISIBLE);
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_next).setVisibility(View.GONE);
+        _playerView.findViewById(androidx.media3.ui.R.id.exo_prev).setVisibility(View.GONE);
+
+        LinearLayout basicControls = _playerView.findViewById(androidx.media3.ui.R.id.exo_basic_controls);
+        View extraControls = inflater.inflate(R.layout.media_player_controller_view_extra_buttons, basicControls, true);
+
+        MediaRouteButton _castButton = extraControls.findViewById(R.id.cast_button);
+        if (_android.enableChromecast) {
+            CastButtonFactory.setUpMediaRouteButton(requireContext(), _castButton);
+        }
+
+        ImageButton pipButton = extraControls.findViewById(R.id.pip_button);
+        if (_mediaPlayerState.canUsePiP.get()) {
+            pipButton.setVisibility(View.VISIBLE);
+            pipButton.setOnClickListener(view -> _mediaPlayerState.pipState.set(MediaPlayerState.UI_STATE.WILL_ENTER));
+        }
+
+        ImageButton _fullscreenToggle = extraControls.findViewById(R.id.toggle_fullscreen);
+        _fullscreenToggle.setOnClickListener(view -> {
+            switch (_mediaPlayerState.fullscreenState.get()) {
+                case ACTIVE ->
+                        _mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_EXIT);
+                case INACTIVE ->
+                        _mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_ENTER);
+            }
+        });
+
+        _playerView.setUseController(_extra.showControls);
+
+        SubtitleView subtitleView = _playerView.findViewById(androidx.media3.ui.R.id.exo_subtitles);
+
+        if (subtitleView != null && _extra.subtitles != null) {
+            subtitleView.setStyle(new CaptionStyleCompat(_extra.subtitles.settings.foregroundColor, _extra.subtitles.settings.backgroundColor, Color.TRANSPARENT, CaptionStyleCompat.EDGE_TYPE_NONE, Color.WHITE, null));
+            subtitleView.setFixedTextSize(TypedValue.COMPLEX_UNIT_DIP, _extra.subtitles.settings.fontSize.floatValue());
+        }
+
+        _playerView.setOnKeyListener((eventContainer, keyCode, keyEvent) -> {
+            if (_playerController != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
+                long duration = _playerController.getDuration();
+                long videoPosition = _playerController.getCurrentPosition();
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        if (videoPosition < duration - MediaPlayer.VIDEO_STEP) {
+                            _playerController.seekTo(videoPosition + MediaPlayer.VIDEO_STEP);
+                        }
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        if (videoPosition - MediaPlayer.VIDEO_STEP > 0) {
+                            _playerController.seekTo(videoPosition - MediaPlayer.VIDEO_STEP);
+                        } else {
+                            _playerController.seekTo(0);
+                        }
+                        return true;
+                    case KeyEvent.KEYCODE_DPAD_CENTER:
+                        if (_playerController.isPlaying()) {
+                            _playerController.pause();
+                        } else {
+                            _playerController.play();
+                        }
+                        return true;
+                    case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                        if (videoPosition < duration - (MediaPlayer.VIDEO_STEP * 2)) {
+                            _playerController.seekTo(videoPosition + (MediaPlayer.VIDEO_STEP * 2));
+                        }
+                        return true;
+                    case KeyEvent.KEYCODE_MEDIA_REWIND:
+                        if (videoPosition - (MediaPlayer.VIDEO_STEP * 2) > 0) {
+                            _playerController.seekTo(videoPosition - (MediaPlayer.VIDEO_STEP * 2));
+                        } else {
+                            _playerController.seekTo(0);
+                        }
+                        return true;
+                }
+            }
+            return false;
+        });
+
+        return _playerView;
+    }
+
+    private void addPlayerViewListeners(PlayerView playerView) {
+        _mediaPlayerState.fullscreenState.observe(state -> {
+            ((ImageButton) playerView.findViewById(R.id.toggle_fullscreen)).setImageResource(state == UI_STATE.ACTIVE ? R.drawable.ic_fullscreen_exit : R.drawable.ic_fullscreen_enter);
+        });
+        _mediaPlayerState.pipState.observe(state -> {
+            playerView.setUseController(state != UI_STATE.ACTIVE && _extra.showControls);
+        });
+        _mediaPlayerState.canCast.observe(isCastAvailable -> {
+            playerView.findViewById(R.id.cast_button).setVisibility(isCastAvailable ? View.VISIBLE : View.GONE);
+            playerView.findViewById(R.id.cast_button).setEnabled(isCastAvailable);
+        });
+        _mediaPlayerState.showSubtitles.observe(showSubtitles ->
+                playerView.findViewById(androidx.media3.ui.R.id.exo_subtitle).setVisibility(showSubtitles ? View.VISIBLE : View.GONE)
+        );
     }
 
     @Nullable
@@ -209,6 +329,13 @@ public class MediaPlayerContainer extends Fragment {
             actionBar = activity.getSupportActionBar();
         }
         return actionBar;
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        boolean isLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
+        _mediaPlayerState.landscapeState.set(isLandscape ? UI_STATE.ACTIVE : UI_STATE.INACTIVE);
     }
 
     @Override
@@ -231,12 +358,6 @@ public class MediaPlayerContainer extends Fragment {
         }
 
         super.onResume();
-    }
-
-    @Override
-    public void onDestroy() {
-        _playerController.destroy();
-        super.onDestroy();
     }
 
 }

@@ -4,13 +4,11 @@ import android.graphics.Rect;
 
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModel;
-import androidx.media3.common.util.UnstableApi;
+import androidx.media3.session.MediaController;
 
-import dev.eduardoroth.mediaplayer.MediaPlayerController;
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 
-@UnstableApi
 public class MediaPlayerState extends ViewModel {
 
     public enum UI_STATE {
@@ -36,7 +34,7 @@ public class MediaPlayerState extends ViewModel {
     public final MediaPlayerStateProperty<Long> getCurrentTime;
     public final MediaPlayerStateProperty<Long> getDuration;
 
-    public final MediaPlayerStateProperty<MediaPlayerController> playerController;
+    public final MediaPlayerStateProperty<MediaController> mediaController;
     public final MediaPlayerStateProperty<AndroidOptions> androidOptions;
     public final MediaPlayerStateProperty<ExtraOptions> extraOptions;
 
@@ -57,7 +55,7 @@ public class MediaPlayerState extends ViewModel {
         getCurrentTime = new MediaPlayerStateProperty<>(owner, 0L);
         getDuration = new MediaPlayerStateProperty<>(owner, 0L);
 
-        playerController = new MediaPlayerStateProperty<>(owner, null, true);
+        mediaController = new MediaPlayerStateProperty<>(owner, null, true);
         androidOptions = new MediaPlayerStateProperty<>(owner, null, true);
         extraOptions = new MediaPlayerStateProperty<>(owner, null, true);
     }
