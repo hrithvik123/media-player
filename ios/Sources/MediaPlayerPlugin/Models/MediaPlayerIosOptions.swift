@@ -25,10 +25,12 @@ public class MediaPlayerIosOptions: NSObject {
         self.automaticallyHideBackgroundForPip = automaticallyHideBackgroundForPip ?? false
         self.fullscreenOnLandscape = fullscreenOnLandscape ?? true
         self.allowsVideoFrameAnalysis = allowsVideoFrameAnalysis ?? true
-
-        self.width = width != nil ? CGFloat(width!) : UIScreen.main.bounds.width
-        self.height = height != nil ? CGFloat(height!) : 9/16 * self.width
-        self.top = top != nil ? CGFloat(top!) : (UIScreen.main.bounds.maxY - self.height)
-        self.left = left != nil ? CGFloat(left!) : UIScreen.main.bounds.minX
+        
+        self.top = top == nil ? 0 : CGFloat(top!);
+        self.left = left == nil ? 0 : CGFloat(left!);
+        
+        self.width = width == nil ? UIScreen.main.bounds.width - (self.left * 2) : CGFloat(width!);
+        self.height = height == nil ? 9/16 * self.width : CGFloat(height!);
+        
     }
 }
