@@ -7,9 +7,7 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import android.util.DisplayMetrics;
-
-import androidx.annotation.OptIn;
-import androidx.media3.common.util.UnstableApi;
+import android.util.Log;
 
 import org.json.JSONException;
 
@@ -17,12 +15,10 @@ import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.SubtitleOptions;
 
-@UnstableApi
 @CapacitorPlugin(name = "MediaPlayer")
 public class MediaPlayerPlugin extends Plugin {
     private MediaPlayer implementation;
 
-    @OptIn(markerClass = UnstableApi.class)
     @Override
     public void load() {
         bridge.getActivity().getSupportFragmentManager();
@@ -31,7 +27,6 @@ public class MediaPlayerPlugin extends Plugin {
         MediaPlayerNotificationCenter.listenNotifications(nextNotification -> notifyListeners(nextNotification.getEventName(), nextNotification.getData()));
     }
 
-    @OptIn(markerClass = UnstableApi.class)
     @PluginMethod
     public void create(final PluginCall call) {
         String playerId = call.getString("playerId");
@@ -64,10 +59,10 @@ public class MediaPlayerPlugin extends Plugin {
         Integer paramWidth = androidOptions != null ? androidOptions.getInteger("width", null) : null;
         Integer paramHeight = androidOptions != null ? androidOptions.getInteger("height", null) : null;
 
-        int marginTop = paramTop == null ? 0 : (int) (paramTop * metrics.scaledDensity);
-        int marginStart = paramStart == null ? 0 : (int) (paramStart * metrics.scaledDensity);
-        int videoWidth = paramWidth == null ? (metrics.widthPixels - (marginStart * 2)) : (int) (paramWidth * metrics.scaledDensity);
-        int videoHeight = paramHeight == null ? (videoWidth * 9 / 16) : (int) (paramHeight * metrics.scaledDensity);
+        int marginTop = paramTop == null ? 0 : (int) (paramTop * metrics.density);
+        int marginStart = paramStart == null ? 0 : (int) (paramStart * metrics.density);
+        int videoWidth = paramWidth == null ? (metrics.widthPixels - (marginStart * 2)) : (int) (paramWidth * metrics.density);
+        int videoHeight = paramHeight == null ? (videoWidth * 9 / 16) : (int) (paramHeight * metrics.density);
 
         AndroidOptions android = new AndroidOptions(
                 androidOptions == null || androidOptions.optBoolean("enableChromecast", true),
@@ -76,6 +71,7 @@ public class MediaPlayerPlugin extends Plugin {
                 androidOptions != null && androidOptions.optBoolean("openInFullscreen", false),
                 androidOptions != null && androidOptions.optBoolean("automaticallyEnterPiP", false),
                 androidOptions == null || androidOptions.optBoolean("fullscreenOnLandscape", true),
+                androidOptions == null || androidOptions.optBoolean("stopOnTaskRemoved", false),
                 marginTop,
                 marginStart,
                 videoWidth,
@@ -170,7 +166,7 @@ public class MediaPlayerPlugin extends Plugin {
     @PluginMethod
     public void setCurrentTime(final PluginCall call) {
         String playerId = call.getString("playerId");
-        Long time = call.getLong("time");
+        Double time = call.getDouble("time");
         if (playerId == null) {
             JSObject ret = new JSObject();
             ret.put("method", "setCurrentTime");
@@ -187,7 +183,7 @@ public class MediaPlayerPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-        bridge.getActivity().runOnUiThread(() -> implementation.setCurrentTime(call, playerId, time));
+        bridge.getActivity().runOnUiThread(() -> implementation.setCurrentTime(call, playerId, time.longValue()));
     }
 
     @PluginMethod

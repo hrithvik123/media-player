@@ -17,6 +17,26 @@ npm install @eduardoroth/media-player
 npx cap sync
 ```
 
+## Android
+
+For the plugin to work correctly, you have to set/add in your `AndroidManifest.xml` for your main activity the following setting for `android:configChanges`
+
+```xml
+<activity
+    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|screenLayout|uiMode|fontScale|density|fontWeightAdjustment"
+>
+</activity>
+```
+
+This will make sure the app doesn't break when doing any of the following actions:
+
+- Changing the orientation
+- Showing or hiding the keyboard
+- Changing the screen size
+- Casting or mirroring the screen
+- Changing the font scale
+- Changing the screen density
+
 ## API
 
 <docgen-index>
@@ -504,7 +524,7 @@ removeAllListeners(options: MediaPlayerIdOptions) => Promise<void>
 
 #### MediaPlayerAndroidOptions
 
-<code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; top?: number; start?: number; height?: number; width?: number; }</code>
+<code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; stopOnTaskRemoved?: boolean; top?: number; start?: number; height?: number; width?: number; }</code>
 
 
 #### MediaPlayerWebOptions

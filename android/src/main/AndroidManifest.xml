@@ -2,8 +2,34 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <application
-        android:enableOnBackInvokedCallback="true"
-        tools:ignore="UnusedAttribute" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
+    <application
+        android:appCategory="video"
+        android:enableOnBackInvokedCallback="true"
+        tools:ignore="UnusedAttribute">
+
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/auto_app_desc" />
+        <service
+            android:name=".MediaPlayerService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback"
+            android:permission="FOREGROUND_SERVICE_MEDIA_PLAYBACK">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaLibraryService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+            </intent-filter>
+        </service>
+        <receiver
+            android:name="androidx.media3.session.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>
