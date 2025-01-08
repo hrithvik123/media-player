@@ -18,7 +18,6 @@ public class MediaPlayerState extends ViewModel {
         INACTIVE,
     }
 
-    public final MediaPlayerStateProperty<Boolean> isPlayerReady;
     public final MediaPlayerStateProperty<Boolean> canUsePiP;
     public final MediaPlayerStateProperty<Boolean> canCast;
 
@@ -39,7 +38,6 @@ public class MediaPlayerState extends ViewModel {
     public final MediaPlayerStateProperty<ExtraOptions> extraOptions;
 
     public MediaPlayerState(LifecycleOwner owner) {
-        isPlayerReady = new MediaPlayerStateProperty<>(owner, false, true);
         canUsePiP = new MediaPlayerStateProperty<>(owner, false, true);
         canCast = new MediaPlayerStateProperty<>(owner, false);
 

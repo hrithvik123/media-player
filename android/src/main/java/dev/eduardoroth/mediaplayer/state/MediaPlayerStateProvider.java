@@ -10,9 +10,6 @@ public class MediaPlayerStateProvider {
     private static final MediaPlayerStateProvider _provider = new MediaPlayerStateProvider();
     private final HashMap<String, MediaPlayerState> _instances = new HashMap<>();
 
-    private MediaPlayerStateProvider() {
-    }
-
     public static MediaPlayerState getState(String playerId) {
         if (!_provider._instances.containsKey(playerId)) {
             throw new Error("State not found for playerId " + playerId);
