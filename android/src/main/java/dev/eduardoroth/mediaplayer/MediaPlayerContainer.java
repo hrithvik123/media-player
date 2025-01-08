@@ -4,6 +4,7 @@ import static dev.eduardoroth.mediaplayer.state.MediaPlayerState.*;
 
 import android.app.PictureInPictureParams;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -19,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,7 +49,7 @@ public class MediaPlayerContainer extends Fragment {
     private AndroidOptions _android;
     private ExtraOptions _extra;
     private MediaPlayerState _mediaPlayerState;
-    private MediaController _playerController;
+    private final MediaController _playerController;
     private final String _playerId;
     private final Rect _sourceRectHint = new Rect();
     private PlayerView _embeddedPlayerView;
@@ -93,13 +95,6 @@ public class MediaPlayerContainer extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedBundleInstance) {
         super.onViewCreated(view, savedBundleInstance);
 
-        _mediaPlayerState.isPlayerReady.observe(state -> {
-            if (state) {
-                _embeddedView.findViewById(R.id.MediaPlayerEmbeddedLoading).setVisibility(View.GONE);
-            } else {
-                _embeddedView.findViewById(R.id.MediaPlayerEmbeddedLoading).setVisibility(View.VISIBLE);
-            }
-        });
         _mediaPlayerState.pipState.observe(state -> {
             switch (state) {
                 case ACTIVE ->
@@ -204,11 +199,6 @@ public class MediaPlayerContainer extends Fragment {
         _embeddedPlayerView = createPlayerView(inflater, _embeddedView);
         _fullscreenPlayerView = createPlayerView(inflater, _fullscreenView);
 
-        addPlayerViewListeners(_embeddedPlayerView);
-        addPlayerViewListeners(_fullscreenPlayerView);
-
-        _embeddedPlayerView.setPlayer(_playerController);
-
         return containerView;
     }
 
@@ -228,6 +218,9 @@ public class MediaPlayerContainer extends Fragment {
         _playerView.findViewById(androidx.media3.ui.R.id.exo_ffwd_with_amount).setVisibility(View.VISIBLE);
         _playerView.findViewById(androidx.media3.ui.R.id.exo_next).setVisibility(View.GONE);
         _playerView.findViewById(androidx.media3.ui.R.id.exo_prev).setVisibility(View.GONE);
+
+        ProgressBar buffering = _playerView.findViewById(androidx.media3.ui.R.id.exo_buffering);
+        buffering.setIndeterminateTintList(ColorStateList.valueOf(Color.WHITE));
 
         LinearLayout basicControls = _playerView.findViewById(androidx.media3.ui.R.id.exo_basic_controls);
         View extraControls = inflater.inflate(R.layout.media_player_controller_view_extra_buttons, basicControls, true);
@@ -253,7 +246,12 @@ public class MediaPlayerContainer extends Fragment {
             }
         });
 
-        _playerView.setUseController(_extra.showControls);
+        if (!_extra.showControls) {
+            _playerView.setUseController(false);
+        } else {
+            _playerView.setControllerShowTimeoutMs(1250);
+            _playerView.setControllerHideOnTouch(true);
+        }
 
         SubtitleView subtitleView = _playerView.findViewById(androidx.media3.ui.R.id.exo_subtitles);
 
@@ -303,23 +301,24 @@ public class MediaPlayerContainer extends Fragment {
             return false;
         });
 
-        return _playerView;
-    }
-
-    private void addPlayerViewListeners(PlayerView playerView) {
         _mediaPlayerState.fullscreenState.observe(state -> {
-            ((ImageButton) playerView.findViewById(R.id.toggle_fullscreen)).setImageResource(state == UI_STATE.ACTIVE ? R.drawable.ic_fullscreen_exit : R.drawable.ic_fullscreen_enter);
+            ((ImageButton) _playerView.findViewById(R.id.toggle_fullscreen)).setImageResource(state == UI_STATE.ACTIVE ? R.drawable.ic_fullscreen_exit : R.drawable.ic_fullscreen_enter);
         });
         _mediaPlayerState.pipState.observe(state -> {
-            playerView.setUseController(state != UI_STATE.ACTIVE && _extra.showControls);
+            switch (state) {
+                case WILL_ENTER -> _playerView.setUseController(false);
+                case WILL_EXIT -> _playerView.setUseController(_extra.showControls);
+            }
         });
         _mediaPlayerState.canCast.observe(isCastAvailable -> {
-            playerView.findViewById(R.id.cast_button).setVisibility(isCastAvailable ? View.VISIBLE : View.GONE);
-            playerView.findViewById(R.id.cast_button).setEnabled(isCastAvailable);
+            _playerView.findViewById(R.id.cast_button).setVisibility(isCastAvailable ? View.VISIBLE : View.GONE);
+            _playerView.findViewById(R.id.cast_button).setEnabled(isCastAvailable);
         });
         _mediaPlayerState.showSubtitles.observe(showSubtitles ->
-                playerView.findViewById(androidx.media3.ui.R.id.exo_subtitle).setVisibility(showSubtitles ? View.VISIBLE : View.GONE)
+                _playerView.findViewById(androidx.media3.ui.R.id.exo_subtitle).setVisibility(showSubtitles ? View.VISIBLE : View.GONE)
         );
+
+        return _playerView;
     }
 
     @Nullable

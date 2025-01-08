@@ -8,10 +8,8 @@
     android:keepScreenOn="true"
     app:animation_enabled="true"
     app:artwork_display_mode="fill"
-    app:hide_on_touch="true"
-    app:image_display_mode="fit"
+    app:image_display_mode="fill"
     app:resize_mode="fit"
-    app:show_buffering="always"
-    app:show_timeout="2500"
-    app:use_controller="true" />
+    app:show_buffering="when_playing"
+    app:surface_type="texture_view" />
 

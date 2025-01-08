@@ -13,21 +13,6 @@
         android:visibility="visible">
 
         <LinearLayout
-            android:id="@+id/MediaPlayerEmbeddedLoading"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="fill"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="visible">
-
-            <ProgressBar
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/MediaPlayerEmbeddedPiP"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
