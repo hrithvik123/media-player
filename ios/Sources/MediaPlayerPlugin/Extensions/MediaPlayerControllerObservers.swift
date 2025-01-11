@@ -1,69 +1,61 @@
 import MediaPlayer
 
-extension MediaPlayerView {
+extension MediaPlayerController {
+                
+    @objc private func didEnterBackground() {
+        if self.ios.enableBackgroundPlay == true {
+            self.isInBackgroundMode = true
+            if self.isInPipMode != true {
+                self.playerController.player = nil
+            }
+            NotificationCenter.default.post(name: .mediaPlayerIsPlayingInBackground, object: nil, userInfo: ["playerId": self.playerId, "isPlayingInBackground": self.isInBackgroundMode])
+        } else if self.isInPipMode != true {
+            self.player.pause()
+        }
+    }
+    
+    @objc private func willEnterForeground() {
+        if self.ios.enableBackgroundPlay == true {
+            self.isInBackgroundMode = false
+            NotificationCenter.default.post(name: .mediaPlayerIsPlayingInBackground, object: nil, userInfo: ["playerId": self.playerId, "isPlayingInBackground": self.isInBackgroundMode])
+            if self.isInPipMode != true {
+                self.playerController.player = self.player;
+            }
+        }
+    }
+    
+    @objc private func orientationDidChange() {
+        if self.ios.fullscreenOnLandscape == true {
+            if UIDevice.current.orientation.isLandscape {
+                self.enterFullScreen(animated: true)
+            } else {
+                self.exitFullScreen(animated: true)
+            }
+        }
+    }
     
     func addObservers() {
-
-        self.screenRotationObserver = NotificationCenter.default.addObserver(
-            forName: UIDevice.orientationDidChangeNotification,
-            object: nil,
-            queue: nil
-        ){(_) in
-            if self.ios.fullscreenOnLandscape == true {
-                if UIDevice.current.orientation.isLandscape {
-                    self.videoPlayer.enterFullScreen(animated: true)
-                } else {
-                    self.videoPlayer.exitFullScreen(animated: true)
-                }
-            }
-        }
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
         
-        self.backgroundObserver = NotificationCenter.default.addObserver(
-            forName: UIApplication.didEnterBackgroundNotification,
-            object: nil,
-            queue: nil
-        ){(_) in
-            if self.ios.enableBackgroundPlay == true {
-                self.isInBackgroundMode = true
-                NotificationCenter.default.post(name: .mediaPlayerIsPlayingInBackground, object: nil, userInfo: ["playerId": self.playerId, "isPlayingInBackground": self.isInBackgroundMode])
-                if self.isInPipMode != true {
-                    self.videoPlayer.player = nil
-                }
-            } else {
-                self.videoPlayer.player?.pause()
-            }
-        }
-        
-        self.foregroundObserver = NotificationCenter.default.addObserver(
-            forName: UIApplication.willEnterForegroundNotification,
-            object: nil,
-            queue: OperationQueue.main
-        ) { (_) in
-            if self.ios.enableBackgroundPlay == true {
-                self.isInBackgroundMode = false
-                NotificationCenter.default.post(name: .mediaPlayerIsPlayingInBackground, object: nil, userInfo: ["playerId": self.playerId, "isPlayingInBackground": self.isInBackgroundMode])
-                if self.isInPipMode != true {
-                    self.videoPlayer.player = self.player
-                }
-            }
-        }
-        
-        self.isReadyObserver = self.videoPlayer.player?
+        self.isReadyObserver = self.player
             .observe(\.status, options: [.new, .old], changeHandler: { (player, _) in
                 switch player.status {
                     case .readyToPlay:
                         self.isLoaded = true
                         self.isVideoEnd = false
                         self.currentTime = 0
-                        if let item = self.playerItem {
-                            self.duration = CMTimeGetSeconds(item.duration)
-                        }
+                        self.duration = CMTimeGetSeconds(self.playerItem.duration)
                         self.setNowPlayingInfo()
                         self.setNowPlayingImage()
                         self.setRemoteCommandCenter()
                         NotificationCenter.default.post(name: .mediaPlayerReady, object: nil, userInfo: ["playerId": self.playerId, "currentTime": self.currentTime, "videoRate": self.rate])
+                        if self.extra.showControls == true {
+                            self.playerController.setValue(false, forKey: "canHidePlaybackControls")
+                        }
                         if self.extra.autoPlayWhenReady == true {
-                            player.play();
+                                player.play();
                         }
                     case .failed, .unknown:
                         self.isLoaded = false
@@ -78,45 +70,48 @@ extension MediaPlayerView {
                 }
             })
         
-        self.isPlayingObserver = self.videoPlayer.player?
+        self.isPlayingObserver = self.player
             .observe(\.timeControlStatus, options:[.new, .old], changeHandler: {(player, _) in
+                DispatchQueue.main.async {
+                    if self.extra.showControls == true {
+                        self.playerController.setValue(player.timeControlStatus == .playing, forKey: "canHidePlaybackControls")
+                    }
+                }
                 switch player.timeControlStatus {
-                case .playing:
-                    NotificationCenter.default.post(
-                        name: .mediaPlayerPlay,
-                        object: nil,
-                        userInfo: ["playerId": self.playerId]
-                    )
-                case .waitingToPlayAtSpecifiedRate:
-                    break
-                case .paused:
-                    NotificationCenter.default.post(
-                        name: .mediaPlayerPause,
-                        object: nil,
-                        userInfo: ["playerId": self.playerId]
-                    )
-                @unknown default:
-                    NotificationCenter.default.post(
-                        name: .mediaPlayerPause,
-                        object: nil,
-                        userInfo: ["playerId": self.playerId]
-                    )
+                    case .playing:
+                        NotificationCenter.default.post(
+                            name: .mediaPlayerPlay,
+                            object: nil,
+                            userInfo: ["playerId": self.playerId]
+                        )
+                    case .waitingToPlayAtSpecifiedRate:
+                        break
+                    case .paused:
+                        NotificationCenter.default.post(
+                            name: .mediaPlayerPause,
+                            object: nil,
+                            userInfo: ["playerId": self.playerId]
+                        )
+                    @unknown default:
+                        NotificationCenter.default.post(
+                            name: .mediaPlayerPause,
+                            object: nil,
+                            userInfo: ["playerId": self.playerId]
+                        )
                 }
             })
         
-        self.rateObserver = self.videoPlayer.player?
+        self.rateObserver = self.player
             .observe(\.rate, options: [.new], changeHandler: {(player, observed) in
-                if let item = self.playerItem {
-                    self.currentTime = CMTimeGetSeconds(item.currentTime())
-                    self.duration = CMTimeGetSeconds(item.duration)
-                }
+                self.currentTime = CMTimeGetSeconds(self.playerItem.currentTime())
+                self.duration = CMTimeGetSeconds(self.playerItem.duration)
                 let userInfo = [
                     "playerId": self.playerId,
                     "currentTime": self.currentTime,
                     "videoRate": self.rate
                 ]
 
-                if self.videoPlayer.player?.timeControlStatus == .playing {
+                if self.player.timeControlStatus == .playing {
                     if observed.newValue! > 0 {
                         if self.rate != observed.newValue! {
                             self.rate = observed.newValue!
@@ -132,7 +127,7 @@ extension MediaPlayerView {
                             player.seek(to: CMTime.zero)
                             self.currentTime = 0
                             if self.extra.loopOnEnd == true {
-                                self.videoPlayer.player?.play()
+                                self.player.play()
                                 NotificationCenter.default.post(
                                     name: .mediaPlayerPlay,
                                     object: nil,
@@ -158,10 +153,5 @@ extension MediaPlayerView {
         self.isPlayingObserver?.invalidate()
         self.isReadyObserver?.invalidate()
         self.rateObserver?.invalidate()
-        
-        NotificationCenter.default.removeObserver(self.backgroundObserver!)
-        NotificationCenter.default.removeObserver(self.foregroundObserver!)
-        NotificationCenter.default.removeObserver(self.screenRotationObserver!)
-        
     }
 }

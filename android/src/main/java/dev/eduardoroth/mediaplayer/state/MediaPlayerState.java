@@ -8,6 +8,7 @@ import androidx.media3.session.MediaController;
 
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
+import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 
 public class MediaPlayerState extends ViewModel {
 
@@ -34,6 +35,7 @@ public class MediaPlayerState extends ViewModel {
     public final MediaPlayerStateProperty<Long> getDuration;
 
     public final MediaPlayerStateProperty<MediaController> mediaController;
+    public final MediaPlayerStateProperty<PlacementOptions> placementOptions;
     public final MediaPlayerStateProperty<AndroidOptions> androidOptions;
     public final MediaPlayerStateProperty<ExtraOptions> extraOptions;
 
@@ -54,6 +56,7 @@ public class MediaPlayerState extends ViewModel {
         getDuration = new MediaPlayerStateProperty<>(owner, 0L);
 
         mediaController = new MediaPlayerStateProperty<>(owner, null, true);
+        placementOptions = new MediaPlayerStateProperty<>(owner, null, true);
         androidOptions = new MediaPlayerStateProperty<>(owner, null, true);
         extraOptions = new MediaPlayerStateProperty<>(owner, null, true);
     }

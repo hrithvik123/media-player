@@ -8,11 +8,15 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Rational;
 
 import org.json.JSONException;
 
+import java.util.Objects;
+
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
+import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 import dev.eduardoroth.mediaplayer.models.SubtitleOptions;
 
 @CapacitorPlugin(name = "MediaPlayer")
@@ -48,21 +52,74 @@ public class MediaPlayerPlugin extends Plugin {
             return;
         }
 
+        JSObject placementOptions = call.getObject("placement");
         JSObject androidOptions = call.getObject("android");
         JSObject extraOptions = call.getObject("extra");
         JSObject subtitleOptions = extraOptions != null ? extraOptions.getJSObject("subtitles") : null;
 
         DisplayMetrics metrics = bridge.getContext().getResources().getDisplayMetrics();
 
-        Integer paramTop = androidOptions != null ? androidOptions.getInteger("top", null) : null;
-        Integer paramStart = androidOptions != null ? androidOptions.getInteger("start", null) : null;
-        Integer paramWidth = androidOptions != null ? androidOptions.getInteger("width", null) : null;
-        Integer paramHeight = androidOptions != null ? androidOptions.getInteger("height", null) : null;
+        String videoOrientation = placementOptions != null ? placementOptions.getString("videoOrientation", "HORIZONTAL") : "HORIZONTAL";
+        String horizontalAlignment = placementOptions != null ? placementOptions.getString("horizontalAlignment", "CENTER") : "CENTER";
+        String verticalAlignment = placementOptions != null ? placementOptions.getString("verticalAlignment", "TOP") : "TOP";
 
-        int marginTop = paramTop == null ? 0 : (int) (paramTop * metrics.density);
-        int marginStart = paramStart == null ? 0 : (int) (paramStart * metrics.density);
-        int videoWidth = paramWidth == null ? (metrics.widthPixels - (marginStart * 2)) : (int) (paramWidth * metrics.density);
-        int videoHeight = paramHeight == null ? (videoWidth * 9 / 16) : (int) (paramHeight * metrics.density);
+        Integer paramHorizontalMargin = placementOptions != null ? placementOptions.getInteger("horizontalMargin", null) : null;
+        Integer paramVerticalMargin = placementOptions != null ? placementOptions.getInteger("verticalMargin", null) : null;
+
+        int horizontalMargin = paramHorizontalMargin != null ? (int) (paramHorizontalMargin * metrics.density) : 0;
+        int verticalMargin = paramVerticalMargin != null ? (int) (paramVerticalMargin * metrics.density) : 0;
+
+        Integer paramHeight = placementOptions != null ? placementOptions.getInteger("height", null) : null;
+        Integer paramWidth = placementOptions != null ? placementOptions.getInteger("width", null) : null;
+
+        int height;
+        int width;
+
+        if (paramHeight != null && paramWidth != null) {
+            width = (int) (paramWidth * metrics.density);
+            height = (int) (paramHeight * metrics.density);
+        } else if (paramHeight == null && paramWidth == null) {
+            if (Objects.equals(videoOrientation, "HORIZONTAL")) {
+                width = metrics.widthPixels;
+                height = (int)(width * (new Rational(9, 16).longValue()));
+            } else {
+                height = metrics.heightPixels;
+                width = (int)(height * (new Rational(9, 16).longValue()));
+            }
+        } else if (paramHeight != null) {
+            height = (int) (paramHeight * metrics.density);
+            if (Objects.equals(videoOrientation, "HORIZONTAL")) {
+                width = (int)(paramHeight * metrics.density * (new Rational(16, 9).floatValue()));
+            } else {
+                width = (int)(paramHeight * metrics.density * (new Rational(9, 16).floatValue()));
+            }
+        } else {
+            width = (int) (paramWidth * metrics.density);
+            if (Objects.equals(videoOrientation, "HORIZONTAL")) {
+                height = (int)(width * (new Rational(16, 9).floatValue()));
+            } else {
+                height = (int)(width * (new Rational(9, 16).floatValue()));
+            }
+        }
+
+        if (width + horizontalMargin > metrics.widthPixels){
+            width = metrics.widthPixels - horizontalMargin;
+            if(Objects.equals(videoOrientation, "HORIZONTAL")){
+                height = (int)(width * (new Rational(9, 16).floatValue()));
+            } else {
+                height = (int)(width * (new Rational(16, 9).floatValue()));
+            }
+        }
+        if(height + verticalMargin > metrics.heightPixels){
+            height = metrics.heightPixels - verticalMargin;
+            if(Objects.equals(videoOrientation, "HORIZONTAL")){
+                width = (int)(height * (new Rational(16, 9).floatValue()));
+            } else {
+                width = (int)(height * (new Rational(9, 16).floatValue()));
+            }
+        }
+
+        PlacementOptions placement = new PlacementOptions(height, width, videoOrientation, horizontalAlignment, verticalAlignment, horizontalMargin, verticalMargin);
 
         AndroidOptions android = new AndroidOptions(
                 androidOptions == null || androidOptions.optBoolean("enableChromecast", true),
@@ -71,11 +128,8 @@ public class MediaPlayerPlugin extends Plugin {
                 androidOptions != null && androidOptions.optBoolean("openInFullscreen", false),
                 androidOptions != null && androidOptions.optBoolean("automaticallyEnterPiP", false),
                 androidOptions == null || androidOptions.optBoolean("fullscreenOnLandscape", true),
-                androidOptions == null || androidOptions.optBoolean("stopOnTaskRemoved", false),
-                marginTop,
-                marginStart,
-                videoWidth,
-                videoHeight);
+                androidOptions == null || androidOptions.optBoolean("stopOnTaskRemoved", false)
+        );
 
         SubtitleOptions subtitles = null;
         if (subtitleOptions != null) {
@@ -104,7 +158,7 @@ public class MediaPlayerPlugin extends Plugin {
                 extraOptions != null && extraOptions.optBoolean("loopOnEnd", false),
                 extraOptions == null || extraOptions.optBoolean("showControls", true),
                 extraOptions != null ? extraOptions.getJSObject("headers") : null);
-        bridge.getActivity().runOnUiThread(() -> implementation.create(call, playerId, url, android, extra));
+        bridge.getActivity().runOnUiThread(() -> implementation.create(call, playerId, url, placement, android, extra));
     }
 
     @PluginMethod

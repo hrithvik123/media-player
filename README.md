@@ -514,17 +514,22 @@ removeAllListeners(options: MediaPlayerIdOptions) => Promise<void>
 
 #### MediaPlayerOptions
 
-<code>{ playerId: string; url: string; ios?: <a href="#mediaplayeriosoptions">MediaPlayerIosOptions</a>; android?: <a href="#mediaplayerandroidoptions">MediaPlayerAndroidOptions</a>; web?: <a href="#mediaplayerweboptions">MediaPlayerWebOptions</a>; extra?: <a href="#mediaplayerextraoptions">MediaPlayerExtraOptions</a>; }</code>
+<code>{ playerId: string; url: string; placement?: <a href="#mediaplayerplacementoptions">MediaPlayerPlacementOptions</a>; ios?: <a href="#mediaplayeriosoptions">MediaPlayerIosOptions</a>; android?: <a href="#mediaplayerandroidoptions">MediaPlayerAndroidOptions</a>; web?: <a href="#mediaplayerweboptions">MediaPlayerWebOptions</a>; extra?: <a href="#mediaplayerextraoptions">MediaPlayerExtraOptions</a>; }</code>
+
+
+#### MediaPlayerPlacementOptions
+
+<code>{ videoOrientation?: 'VERTICAL' | 'HORIZONTAL'; horizontalMargin?: number; horizontalAlignment?: 'START' | 'CENTER' | 'END'; verticalMargin?: number; verticalAlignment?: 'TOP' | 'CENTER' | 'BOTTOM'; height?: number; width?: number; }</code>
 
 
 #### MediaPlayerIosOptions
 
-<code>{ enableExternalPlayback?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; automaticallyHideBackgroundForPip?: boolean; fullscreenOnLandscape?: boolean; allowsVideoFrameAnalysis?: boolean; top?: number; left?: number; height?: number; width?: number; }</code>
+<code>{ enableExternalPlayback?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; automaticallyHideBackgroundForPip?: boolean; fullscreenOnLandscape?: boolean; allowsVideoFrameAnalysis?: boolean; }</code>
 
 
 #### MediaPlayerAndroidOptions
 
-<code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; stopOnTaskRemoved?: boolean; top?: number; start?: number; height?: number; width?: number; }</code>
+<code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; stopOnTaskRemoved?: boolean; }</code>
 
 
 #### MediaPlayerWebOptions

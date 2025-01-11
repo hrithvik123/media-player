@@ -10,12 +10,8 @@ public class AndroidOptions implements Serializable {
     public boolean automaticallyEnterPiP;
     public boolean fullscreenOnLandscape;
     public boolean stopOnTaskRemoved;
-    public int top;
-    public int start;
-    public int width;
-    public int height;
 
-    public AndroidOptions(boolean enableChromecast, boolean enablePiP, boolean enableBackgroundPlay, boolean openInFullscreen, boolean automaticallyEnterPiP, boolean fullscreenOnLandscape, boolean stopOnTaskRemoved, int top, int start, int width, int height) {
+    public AndroidOptions(boolean enableChromecast, boolean enablePiP, boolean enableBackgroundPlay, boolean openInFullscreen, boolean automaticallyEnterPiP, boolean fullscreenOnLandscape, boolean stopOnTaskRemoved) {
         this.enableChromecast = enableChromecast;
         this.enablePiP = enablePiP;
         this.enableBackgroundPlay = enableBackgroundPlay;
@@ -23,10 +19,5 @@ public class AndroidOptions implements Serializable {
         this.automaticallyEnterPiP = automaticallyEnterPiP;
         this.fullscreenOnLandscape = fullscreenOnLandscape;
         this.stopOnTaskRemoved = stopOnTaskRemoved;
-
-        this.top = top;
-        this.start = start;
-        this.width = width;
-        this.height = height;
     }
 }

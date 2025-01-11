@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/MediaPlayerContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/MediaPlayerEmbeddedContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -41,7 +41,7 @@
 
         </LinearLayout>
 
-    </FrameLayout>
+    </RelativeLayout>
 
     <FrameLayout
         android:id="@+id/MediaPlayerFullscreenContainer"
@@ -52,4 +52,4 @@
 
     </FrameLayout>
 
-</FrameLayout>
+</RelativeLayout>

@@ -2,22 +2,23 @@ import AVFoundation
 import AVKit
 import UIKit
 
-extension MediaPlayerView: AVPlayerViewControllerDelegate {
+extension MediaPlayerController: AVPlayerViewControllerDelegate {
     
     public func playerViewControllerWillStartPictureInPicture(_ playerViewController: AVPlayerViewController) {
         if self.ios.automaticallyHideBackgroundForPip == true {
-            self.isHidden = true
+            self.view.isHidden = true
         }
     }
 
     public func playerViewControllerWillStopPictureInPicture(_ playerViewController: AVPlayerViewController) {
         if self.ios.automaticallyHideBackgroundForPip == true {
-            self.isHidden = false
+            self.view.isHidden = false
         }
     }
     
-    public func playerViewControllerRestoreUserInterfaceForPictureInPictureStop(_ playerViewController: AVPlayerViewController) {
-        self.isHidden = false
+    public func playerViewControllerRestoreUserInterfaceForPictureInPictureStop(_ playerViewController: AVPlayerViewController) async -> Bool {
+        self.view.isHidden = false
+        return true
     }
     
     public func playerViewControllerDidStartPictureInPicture(_ playerViewController: AVPlayerViewController){
@@ -35,9 +36,6 @@ extension MediaPlayerView: AVPlayerViewControllerDelegate {
         willBeginFullScreenPresentationWithAnimationCoordinator coordinator: any UIViewControllerTransitionCoordinator
     ){
         self.isFullscreen = true
-        coordinator.animate(alongsideTransition: nil) {_ in
-            self.videoPlayer.view.superview?.bringSubviewToFront(self.videoPlayer.view)
-        }
         NotificationCenter.default.post(name: .mediaPlayerFullscreen, object: nil, userInfo: ["playerId": self.playerId, "isInFullScreen": true])
     }
     
@@ -45,13 +43,14 @@ extension MediaPlayerView: AVPlayerViewControllerDelegate {
         _ playerViewController: AVPlayerViewController,
         willEndFullScreenPresentationWithAnimationCoordinator coordinator: any UIViewControllerTransitionCoordinator
     ){
-        self.isFullscreen = false
-        let isPlaying = self.videoPlayer.player?.timeControlStatus == .playing
-        coordinator.animate(alongsideTransition: nil) { _ in
-            if isPlaying {
-                self.videoPlayer.player?.play()
+        let wasPlaying = self.player.timeControlStatus == .playing
+        coordinator.animate(alongsideTransition: nil) { context in
+            if !context.isCancelled {
+                if wasPlaying {
+                    self.player.play()
+                }
+                self.isFullscreen = false
             }
-            self.superview?.bringSubviewToFront(self)
         }
     }
     
