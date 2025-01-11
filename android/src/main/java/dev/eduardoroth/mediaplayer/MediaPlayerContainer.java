@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Rational;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -21,12 +22,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.media3.common.util.UnstableApi;
@@ -41,11 +44,13 @@ import com.google.android.gms.cast.framework.CastButtonFactory;
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
+import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 
 public class MediaPlayerContainer extends Fragment {
 
+    private PlacementOptions _placement;
     private AndroidOptions _android;
     private ExtraOptions _extra;
     private MediaPlayerState _mediaPlayerState;
@@ -54,7 +59,7 @@ public class MediaPlayerContainer extends Fragment {
     private final Rect _sourceRectHint = new Rect();
     private PlayerView _embeddedPlayerView;
     private PlayerView _fullscreenPlayerView;
-    private FrameLayout _embeddedView;
+    private RelativeLayout _embeddedView;
     private FrameLayout _fullscreenView;
 
     public MediaPlayerContainer(MediaController playerController, String playerId) {
@@ -67,6 +72,7 @@ public class MediaPlayerContainer extends Fragment {
         super.onCreate(savedInstanceBundle);
         _mediaPlayerState = MediaPlayerStateProvider.getState(_playerId);
         _mediaPlayerState.mediaController.set(_playerController);
+        _placement = _mediaPlayerState.placementOptions.get();
         _android = _mediaPlayerState.androidOptions.get();
         _extra = _mediaPlayerState.extraOptions.get();
         requireActivity().addOnPictureInPictureModeChangedListener(state -> {
@@ -104,7 +110,7 @@ public class MediaPlayerContainer extends Fragment {
                 case WILL_ENTER -> {
                     _embeddedView.findViewById(R.id.MediaPlayerEmbeddedPiP).setVisibility(View.VISIBLE);
 
-                    PictureInPictureParams.Builder pictureInPictureParams = new PictureInPictureParams.Builder().setSourceRectHint(_mediaPlayerState.sourceRectHint.get()).setAspectRatio(new Rational(_android.width, _android.height));
+                    PictureInPictureParams.Builder pictureInPictureParams = new PictureInPictureParams.Builder().setSourceRectHint(_mediaPlayerState.sourceRectHint.get()).setAspectRatio(new Rational(_placement.width, _placement.height));
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         pictureInPictureParams.setAutoEnterEnabled(_android.automaticallyEnterPiP);
@@ -113,7 +119,7 @@ public class MediaPlayerContainer extends Fragment {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         pictureInPictureParams.setTitle(_extra.title);
                         pictureInPictureParams.setSubtitle(_extra.subtitle);
-                        pictureInPictureParams.setExpandedAspectRatio(new Rational(_android.width, _android.height));
+                        pictureInPictureParams.setExpandedAspectRatio(new Rational(_placement.width, _placement.height));
                     }
                     requireActivity().enterPictureInPictureMode(pictureInPictureParams.build());
                     _mediaPlayerState.pipState.set(UI_STATE.ACTIVE);
@@ -191,10 +197,7 @@ public class MediaPlayerContainer extends Fragment {
         _fullscreenView = containerView.findViewById(R.id.MediaPlayerFullscreenContainer);
         _embeddedView = containerView.findViewById(R.id.MediaPlayerEmbeddedContainer);
 
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(_android.width, _android.height, Gravity.FILL);
-        params.topMargin = _android.top;
-        params.setMarginStart(_android.start);
-        _embeddedView.setLayoutParams(params);
+        updateEmbeddedLayout();
 
         _embeddedPlayerView = createPlayerView(inflater, _embeddedView);
         _fullscreenPlayerView = createPlayerView(inflater, _fullscreenView);
@@ -319,6 +322,40 @@ public class MediaPlayerContainer extends Fragment {
         );
 
         return _playerView;
+    }
+
+    private void updateEmbeddedLayout() {
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(_placement.width, _placement.height);
+        switch (_placement.horizontalAlignment) {
+            case "START":
+                params.addRule(RelativeLayout.ALIGN_START);
+                params.setMarginStart(_placement.horizontalMargin);
+                break;
+            case "END":
+                params.addRule(RelativeLayout.ALIGN_END);
+                params.setMarginEnd(_placement.horizontalMargin);
+                break;
+            case "CENTER":
+            default:
+                params.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                break;
+        }
+        switch (_placement.verticalAlignment) {
+            case "BOTTOM":
+                params.addRule(RelativeLayout.ALIGN_BOTTOM);
+                params.bottomMargin = _placement.verticalMargin;
+                break;
+            case "CENTER":
+                params.addRule(RelativeLayout.CENTER_VERTICAL);
+            case "TOP":
+            default:
+                params.addRule(RelativeLayout.ALIGN_TOP);
+                params.topMargin = _placement.verticalMargin;
+                break;
+        }
+        params.height = _placement.height;
+        params.width = _placement.width;
+        _embeddedView.setLayoutParams(params);
     }
 
     @Nullable

@@ -21,6 +21,7 @@ import java.io.File;
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
+import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 
@@ -33,10 +34,11 @@ public class MediaPlayer {
     }
 
     @OptIn(markerClass = UnstableApi.class)
-    public void create(PluginCall call, String playerId, String url, AndroidOptions android, ExtraOptions extra) {
+    public void create(PluginCall call, String playerId, String url, PlacementOptions placement, AndroidOptions android, ExtraOptions extra) {
         Bundle connectionHints = new Bundle();
         connectionHints.putString("playerId", playerId);
         connectionHints.putString("videoUrl", url);
+        connectionHints.putSerializable("placement", placement);
         connectionHints.putSerializable("android", android);
         extra.poster = extra.poster != null ? getFinalPath(extra.poster) : null;
         connectionHints.putSerializable("extra", extra);
@@ -61,7 +63,6 @@ public class MediaPlayer {
             } catch (Exception | Error futureError) {
                 ret.put("result", false);
                 ret.put("message", "An error occurred while creating player with id " + playerId);
-                Log.e("MEDIA PLAYER ROTH", futureError.toString());
                 call.resolve(ret);
             }
         }, _currentActivity.getMainExecutor());

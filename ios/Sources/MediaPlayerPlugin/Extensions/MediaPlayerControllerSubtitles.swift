@@ -1,12 +1,11 @@
 import Foundation
 import AVKit
 
-extension MediaPlayerView {
+extension MediaPlayerController {
  
     func setSubtitles() {
         
         if var subTitleUrl = self.extra.subtitles?.url {
-            var stUrl: URL?
             //check if subtitle is .srt
             if subTitleUrl.pathExtension == "srt" {
                 let vttUrl: URL = srtSubtitleToVtt(srtURL: subTitleUrl)
@@ -17,64 +16,51 @@ extension MediaPlayerView {
                 textStyle.append(contentsOf: self.setSubTitleStyle(options: opt))
             }
 
-                let subTitleAsset = AVAsset(url: subTitleUrl)
-                let composition = AVMutableComposition()
+            let subTitleAsset = AVAsset(url: subTitleUrl)
+            let composition = AVMutableComposition()
 
-                if let videoTrack = composition.addMutableTrack(
-                    withMediaType: AVMediaType.video,
+            if let videoTrack = composition.addMutableTrack(
+                withMediaType: AVMediaType.video,
+                preferredTrackID: Int32(kCMPersistentTrackID_Invalid)) {
+                if let audioTrack = composition.addMutableTrack(
+                    withMediaType: AVMediaType.audio,
                     preferredTrackID: Int32(kCMPersistentTrackID_Invalid)) {
-                    if let audioTrack = composition.addMutableTrack(
-                        withMediaType: AVMediaType.audio,
-                        preferredTrackID: Int32(kCMPersistentTrackID_Invalid)) {
-                        do {
-                            try videoTrack.insertTimeRange(
-                                CMTimeRangeMake(start: CMTime.zero,
-                                                duration: self.videoAsset.duration),
-                                of: self.videoAsset.tracks(
-                                    withMediaType: AVMediaType.video)[0],
-                                at: CMTime.zero)
-                            // if video has an audio track
-                            if self.videoAsset.tracks.count > 0 {
-                                let clipAudioTrack = self.videoAsset.tracks(
-                                    withMediaType: AVMediaType.audio)[0]
-                                try audioTrack.insertTimeRange(CMTimeRangeMake(
-                                                                start: CMTime.zero,
-                                                                duration: self.videoAsset.duration),
-                                                               of: clipAudioTrack, at: CMTime.zero)
-                            }
-                            //Adds subtitle track
-                            if let subtitleTrack = composition.addMutableTrack(
-                                withMediaType: .text,
-                                preferredTrackID: kCMPersistentTrackID_Invalid) {
-                                do {
-                                    let duration = self.videoAsset.duration
-                                    try subtitleTrack.insertTimeRange(
-                                        CMTimeRangeMake(start: CMTime.zero,
-                                                        duration: duration),
-                                        of: subTitleAsset.tracks(
-                                            withMediaType: .text)[0],
-                                        at: CMTime.zero)
-
-                                    self.playerItem = AVPlayerItem(asset: composition)
-                                    self.playerItem?.textStyleRules = textStyle
-
-                                } catch {
-                                    self.playerItem = AVPlayerItem(asset: self.videoAsset)
-                                }
-                            } else {
-                                self.playerItem = AVPlayerItem(asset: self.videoAsset)
-                            }
-                        } catch {
-                            self.playerItem = AVPlayerItem(asset: self.videoAsset)
+                    do {
+                        try videoTrack.insertTimeRange(
+                            CMTimeRangeMake(start: CMTime.zero,
+                                            duration: self.videoAsset.duration),
+                            of: self.videoAsset.tracks(
+                                withMediaType: AVMediaType.video)[0],
+                            at: CMTime.zero)
+                        // if video has an audio track
+                        if self.videoAsset.tracks.count > 0 {
+                            let clipAudioTrack = self.videoAsset.tracks(
+                                withMediaType: AVMediaType.audio)[0]
+                            try audioTrack.insertTimeRange(CMTimeRangeMake(
+                                                            start: CMTime.zero,
+                                                            duration: self.videoAsset.duration),
+                                                           of: clipAudioTrack, at: CMTime.zero)
                         }
-                    } else {
-                        self.playerItem = AVPlayerItem(asset: self.videoAsset)
-                    }
-                } else {
-                    self.playerItem = AVPlayerItem(asset: self.videoAsset)
+                        //Adds subtitle track
+                        if let subtitleTrack = composition.addMutableTrack(
+                            withMediaType: .text,
+                            preferredTrackID: kCMPersistentTrackID_Invalid) {
+                            do {
+                                let duration = self.videoAsset.duration
+                                try subtitleTrack.insertTimeRange(
+                                    CMTimeRangeMake(start: CMTime.zero,
+                                                    duration: duration),
+                                    of: subTitleAsset.tracks(
+                                        withMediaType: .text)[0],
+                                    at: CMTime.zero)
+
+                                self.playerItem = AVPlayerItem(asset: composition)
+                                self.playerItem.textStyleRules = textStyle
+                            } catch {}
+                        }
+                    } catch {}
                 }
-            } else {
-            self.playerItem = AVPlayerItem(asset: self.videoAsset)
+            }
         }
     }
 

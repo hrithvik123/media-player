@@ -73,13 +73,15 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
             call.resolve([ "result": false, "method": "create", "message": "URL not defined"])
             return
         }
-        
+
+
+        let placementOptions = call.options["placement"] as? [String: Any] ?? [:]
         let iosOptions = call.options["ios"] as? [String: Any] ?? [:]
         let extraOptions = call.options["extra"] as? [String: Any] ?? [:]
         let subtitleOptions = extraOptions["subtitles"] as? [String: Any] ?? nil
         
         let ios = MediaPlayerIosOptions(
-            enableExternalPlayback: iosOptions["enableExternalPlayback"] as? Bool, enablePiP: iosOptions["enablePiP"] as? Bool, enableBackgroundPlay: iosOptions["enableBackgroundPlay"] as? Bool, openInFullscreen: iosOptions["openInFullscreen"] as? Bool, automaticallyEnterPiP: iosOptions["automaticallyEnterPiP"] as? Bool, automaticallyHideBackgroundForPip: iosOptions["automaticallyHideBackgroundForPip"] as? Bool, top: iosOptions["top"] as? Float, left: iosOptions["left"] as? Float, height: iosOptions["height"] as? Float, width: iosOptions["width"] as? Float, fullscreenOnLandscape: iosOptions["fullscreenOnLandscape"] as? Bool, allowsVideoFrameAnalysis: iosOptions["allowsVideoFrameAnalysis"] as? Bool
+            enableExternalPlayback: iosOptions["enableExternalPlayback"] as? Bool, enablePiP: iosOptions["enablePiP"] as? Bool, enableBackgroundPlay: iosOptions["enableBackgroundPlay"] as? Bool, openInFullscreen: iosOptions["openInFullscreen"] as? Bool, automaticallyEnterPiP: iosOptions["automaticallyEnterPiP"] as? Bool, automaticallyHideBackgroundForPip: iosOptions["automaticallyHideBackgroundForPip"] as? Bool, fullscreenOnLandscape: iosOptions["fullscreenOnLandscape"] as? Bool, allowsVideoFrameAnalysis: iosOptions["allowsVideoFrameAnalysis"] as? Bool
         )
                         
         var subTitle: URL?
@@ -115,8 +117,13 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
         let extra = MediaPlayerExtraOptions(
             title: extraOptions["title"] as? String, subtitle: extraOptions["subtitle"] as? String, poster: posterURL, artist: extraOptions["artist"] as? String, rate: extraOptions["rate"] as? Float, subtitles: subtitles, autoPlayWhenReady: extraOptions["autoPlayWhenReady"] as? Bool, loopOnEnd: extraOptions["loopOnEnd"] as? Bool, showControls:extraOptions["showControls"] as? Bool, headers: extraOptions["headers"] as? [String: String]
         )
+
+        let placement = MediaPlayerPlacementOptions(
+            height: placementOptions["height"] as? Float, width: placementOptions["width"] as? Float, videoOrientation: placementOptions["videoOrientation"] as? String,
+            verticalMargin: placementOptions["verticalMargin"] as? Float, horizontalMargin: placementOptions["horizontalMargin"] as? Float, horizontalAlignment: placementOptions["horizontalAlignment"] as? String, verticalAlignment: placementOptions["verticalAlignment"] as? String
+        )
         
-        implementation.create(call: call, playerId: playerId, url: parsedUrl, ios: ios, extra: extra)
+        implementation.create(call: call, playerId: playerId, url: parsedUrl, placement: placement, ios: ios, extra: extra)
     }
 
     @objc func play(_ call: CAPPluginCall) {

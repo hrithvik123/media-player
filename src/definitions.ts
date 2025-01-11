@@ -9,7 +9,9 @@ export interface MediaPlayerPlugin {
   setCurrentTime(options: MediaPlayerSetCurrentTimeOptions): Promise<MediaPlayerResult<number>>;
   isPlaying(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<boolean>>;
   isMuted(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<boolean>>;
-  setVisibilityBackgroundForPiP(options: MediaPlayerSetVisibilityBackgroundForPiPOptions): Promise<MediaPlayerResult<boolean>>;
+  setVisibilityBackgroundForPiP(
+    options: MediaPlayerSetVisibilityBackgroundForPiPOptions,
+  ): Promise<MediaPlayerResult<boolean>>;
   mute(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<boolean>>;
   getVolume(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<number>>;
   setVolume(options: MediaPlayerSetVolumeOptions): Promise<MediaPlayerResult<number>>;
@@ -65,6 +67,7 @@ export interface MediaPlayerPlugin {
 export type MediaPlayerOptions = {
   playerId: string;
   url: string;
+  placement?: MediaPlayerPlacementOptions;
   ios?: MediaPlayerIosOptions;
   android?: MediaPlayerAndroidOptions;
   web?: MediaPlayerWebOptions;
@@ -89,7 +92,7 @@ export type MediaPlayerSetRateOptions = {
 export type MediaPlayerSetVisibilityBackgroundForPiPOptions = {
   playerId: string;
   isVisible: boolean;
-}
+};
 
 export type MediaPlayerExtraOptions = {
   title?: string;
@@ -115,10 +118,6 @@ export type MediaPlayerIosOptions = {
   automaticallyHideBackgroundForPip?: boolean;
   fullscreenOnLandscape?: boolean;
   allowsVideoFrameAnalysis?: boolean;
-  top?: number;
-  left?: number;
-  height?: number;
-  width?: number;
 };
 
 export type MediaPlayerAndroidOptions = {
@@ -129,14 +128,20 @@ export type MediaPlayerAndroidOptions = {
   automaticallyEnterPiP?: boolean;
   fullscreenOnLandscape?: boolean;
   stopOnTaskRemoved?: boolean;
-  top?: number;
-  start?: number;
-  height?: number;
-  width?: number;
 };
 
 export type MediaPlayerWebOptions = {
   enableChromecast?: boolean;
+};
+
+export type MediaPlayerPlacementOptions = {
+  videoOrientation?: 'VERTICAL' | 'HORIZONTAL';
+  horizontalMargin?: number;
+  horizontalAlignment?: 'START' | 'CENTER' | 'END';
+  verticalMargin?: number;
+  verticalAlignment?: 'TOP' | 'CENTER' | 'BOTTOM';
+  height?: number;
+  width?: number;
 };
 
 export type MediaPlayerSubtitleOptions = {

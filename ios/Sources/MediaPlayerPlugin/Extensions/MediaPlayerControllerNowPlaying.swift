@@ -1,6 +1,6 @@
 import MediaPlayer
 
-extension MediaPlayerView {
+extension MediaPlayerController {
 
     func setNowPlayingImage() {
         if let artwork = self.extra.poster {
@@ -38,15 +38,15 @@ extension MediaPlayerView {
         
         UIApplication.shared.beginReceivingRemoteControlEvents()
 
-        periodicTimeObserver = player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.1, preferredTimescale: CMTimeScale(NSEC_PER_SEC)), queue: nil) { time in
+        periodicTimeObserver = self.player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.1, preferredTimescale: CMTimeScale(NSEC_PER_SEC)), queue: nil) { time in
             var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
-            if let currentItem = self.player?.currentItem,
-               let currentTime = self.player?.currentTime(),
+            if let currentItem = self.player.currentItem,
                currentItem.status == .readyToPlay {
+                let currentTime = self.player.currentTime()
 
                 let elapsedTime = CMTimeGetSeconds(currentTime)
                 if currentItem.isPlaybackLikelyToKeepUp {
-                    nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = self.player?.rate
+                    nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = self.player.rate
                 } else {
                     nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 0
                 }
@@ -66,7 +66,7 @@ extension MediaPlayerView {
     }
     func clearNowPlaying(){
         if let token = self.periodicTimeObserver {
-            self.videoPlayer.player?.removeTimeObserver(token)
+            self.player.removeTimeObserver(token)
             self.periodicTimeObserver = nil
         }
         MPNowPlayingInfoCenter.default().nowPlayingInfo = [:]

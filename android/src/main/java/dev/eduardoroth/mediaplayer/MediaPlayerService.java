@@ -35,6 +35,7 @@ import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.MediaItem;
 import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
+import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 
@@ -56,8 +57,10 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
                 .orElse(null);
 
         String videoUrl = controllerInfo.getConnectionHints().getString("videoUrl");
+        PlacementOptions placement = (PlacementOptions) controllerInfo.getConnectionHints().getSerializable("placement");
         AndroidOptions android = (AndroidOptions) controllerInfo.getConnectionHints().getSerializable("android");
         ExtraOptions extra = (ExtraOptions) controllerInfo.getConnectionHints().getSerializable("extra");
+        assert placement != null;
         assert android != null;
         assert extra != null;
 
@@ -78,6 +81,7 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
         }
 
         MediaPlayerState mediaPlayerState = MediaPlayerStateProvider.createState(playerId, this);
+        mediaPlayerState.placementOptions.set(placement);
         mediaPlayerState.androidOptions.set(android);
         mediaPlayerState.extraOptions.set(extra);
 
