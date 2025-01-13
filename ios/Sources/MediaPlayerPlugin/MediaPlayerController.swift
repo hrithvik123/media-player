@@ -154,6 +154,7 @@ public class MediaPlayerController: UIViewController {
     public func releasePlayer() {
         self.clearNowPlaying()
         self.removeObservers()
+        self.player.pause()
         self.playerController.player = nil
         self.playerController.willMove(toParent: nil)
         self.playerController.view.removeFromSuperview()
