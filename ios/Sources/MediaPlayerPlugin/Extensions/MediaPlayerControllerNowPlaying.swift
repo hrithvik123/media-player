@@ -70,6 +70,5 @@ extension MediaPlayerController {
             self.periodicTimeObserver = nil
         }
         MPNowPlayingInfoCenter.default().nowPlayingInfo = [:]
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
     }
 }
