@@ -1,7 +1,7 @@
 import MediaPlayer
 
 extension MediaPlayerController {
-                
+    
     @objc private func didEnterBackground() {
         if self.ios.enableBackgroundPlay == true {
             self.isInBackgroundMode = true
@@ -39,24 +39,16 @@ extension MediaPlayerController {
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
         
-        self.isReadyObserver = self.player
+        self.statusObserver = self.player
             .observe(\.status, options: [.new, .old], changeHandler: { (player, _) in
                 switch player.status {
                     case .readyToPlay:
-                        self.isLoaded = true
                         self.isVideoEnd = false
                         self.currentTime = 0
                         self.duration = CMTimeGetSeconds(self.playerItem.duration)
                         self.setNowPlayingInfo()
                         self.setNowPlayingImage()
                         self.setRemoteCommandCenter()
-                        NotificationCenter.default.post(name: .mediaPlayerReady, object: nil, userInfo: ["playerId": self.playerId, "currentTime": self.currentTime, "videoRate": self.rate])
-                        if self.extra.showControls == true {
-                            self.playerController.setValue(false, forKey: "canHidePlaybackControls")
-                        }
-                        if self.extra.autoPlayWhenReady == true {
-                                player.play();
-                        }
                     case .failed, .unknown:
                         self.isLoaded = false
                         self.isVideoEnd = false
@@ -69,14 +61,46 @@ extension MediaPlayerController {
                         self.clearRemoteCommandCenter()
                 }
             })
+
+        self.isReadyObserver = self.playerController
+            .observe(\.isReadyForDisplay, options: [.new, .old], changeHandler: { (player, _) in
+                    if player.isReadyForDisplay {
+                        self.setLoading(isLoading: false)
+                        self.isLoaded = true
+                        NotificationCenter.default.post(name: .mediaPlayerReady, object: nil, userInfo: ["playerId": self.playerId, "currentTime": self.currentTime, "videoRate": self.rate])
+                        if self.extra.autoPlayWhenReady == true {
+                            self.player.play();
+                        } else {
+                            self.setAllowHidingPlaybackControls(allowHiding: false)
+                        }
+                        self.isReadyObserver!.invalidate()
+                        
+                        self.isPlaybackBufferEmptyObserver = self.player.currentItem!
+                            .observe(\.isPlaybackBufferEmpty, options: [.new, .old], changeHandler: { (item, _) in
+                                if item.isPlaybackBufferEmpty {
+                                    self.setLoading(isLoading: true)
+                                }
+                            })
+                        
+                        self.isPlaybackLikelyToKeepUpObserver = self.player.currentItem!
+                            .observe(\.isPlaybackLikelyToKeepUp, options: [.new, .old], changeHandler: { (item, _) in
+                                if item.isPlaybackLikelyToKeepUp {
+                                    self.setLoading(isLoading: false)
+                                }
+                            })
+                        
+                        self.isPlaybackBufferFullObserver = self.player.currentItem!
+                            .observe(\.isPlaybackBufferFull, options: [.new, .old], changeHandler: { (item, _) in
+                                if item.isPlaybackBufferFull {
+                                    self.setLoading(isLoading: false)
+                                }
+                            })
+                    }
+            })
         
         self.isPlayingObserver = self.player
             .observe(\.timeControlStatus, options:[.new, .old], changeHandler: {(player, _) in
-                DispatchQueue.main.async {
-                    if self.extra.showControls == true {
-                        self.playerController.setValue(player.timeControlStatus == .playing, forKey: "canHidePlaybackControls")
-                    }
-                }
+                self.setAllowHidingPlaybackControls(allowHiding: player.timeControlStatus != .paused)
                 switch player.timeControlStatus {
                     case .playing:
                         NotificationCenter.default.post(
@@ -87,12 +111,6 @@ extension MediaPlayerController {
                     case .waitingToPlayAtSpecifiedRate:
                         break
                     case .paused:
-                        NotificationCenter.default.post(
-                            name: .mediaPlayerPause,
-                            object: nil,
-                            userInfo: ["playerId": self.playerId]
-                        )
-                    @unknown default:
                         NotificationCenter.default.post(
                             name: .mediaPlayerPause,
                             object: nil,
@@ -127,7 +145,7 @@ extension MediaPlayerController {
                             player.seek(to: CMTime.zero)
                             self.currentTime = 0
                             if self.extra.loopOnEnd == true {
-                                self.player.play()
+                                player.play()
                                 NotificationCenter.default.post(
                                     name: .mediaPlayerPlay,
                                     object: nil,
@@ -151,7 +169,11 @@ extension MediaPlayerController {
     
     func removeObservers(){
         self.isPlayingObserver?.invalidate()
-        self.isReadyObserver?.invalidate()
         self.rateObserver?.invalidate()
+        self.statusObserver?.invalidate()
+        
+        self.isPlaybackBufferFullObserver?.invalidate()
+        self.isPlaybackBufferEmptyObserver?.invalidate()
+        self.isPlaybackLikelyToKeepUpObserver?.invalidate()
     }
 }

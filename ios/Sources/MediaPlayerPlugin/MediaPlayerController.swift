@@ -24,10 +24,14 @@ public class MediaPlayerController: UIViewController {
     var isRateZero: Bool = false
     
     var isPlayingObserver: NSKeyValueObservation?
+    var statusObserver: NSKeyValueObservation?
     var isReadyObserver: NSKeyValueObservation?
     var rateObserver: NSKeyValueObservation?
     var timeObserver: NSKeyValueObservation?
     var seekObserver: NSKeyValueObservation?
+    var isPlaybackBufferEmptyObserver: NSKeyValueObservation?
+    var isPlaybackBufferFullObserver: NSKeyValueObservation?
+    var isPlaybackLikelyToKeepUpObserver: NSKeyValueObservation?
 
     var screenRotationObserver: Any?
     var backgroundObserver: Any?
@@ -39,6 +43,7 @@ public class MediaPlayerController: UIViewController {
     
     var playerController: AVPlayerViewController
     var player: AVPlayer
+    var loadingView: UIActivityIndicatorView
 
     init(playerId: String, url: URL, placement: MediaPlayerPlacementOptions, ios: MediaPlayerIosOptions, extra: MediaPlayerExtraOptions) {
         self.playerId = playerId
@@ -56,14 +61,16 @@ public class MediaPlayerController: UIViewController {
         self.playerController = AVPlayerViewController()
         self.playerItem = AVPlayerItem(asset: videoAsset)
         self.player = AVPlayer(playerItem: playerItem)
+        self.loadingView = UIActivityIndicatorView(style: .large)
         
         super.init(nibName: nil, bundle: nil)
+        
         self.playerController.delegate = self
         self.playerController.player = player
         self.addObservers()
         
         self.playerController.updatesNowPlayingInfoCenter = false
-        self.playerController.showsPlaybackControls = self.extra.showControls == true
+        
         if #available (iOS 16.0, *) {
             self.playerController.allowsVideoFrameAnalysis = ios.allowsVideoFrameAnalysis
         }
@@ -92,18 +99,27 @@ public class MediaPlayerController: UIViewController {
         if(self.extra.subtitles != nil) {
             setSubtitles()
         }
+        
+        self.setLoading(isLoading: true)
                         
+        self.view.backgroundColor = .black
         self.view.translatesAutoresizingMaskIntoConstraints = false
         self.view.clipsToBounds = true
-        self.view.contentMode = .scaleToFill
         
         self.playerController.view.translatesAutoresizingMaskIntoConstraints = false
         self.playerController.view.clipsToBounds = true
         self.playerController.view.contentMode = .scaleToFill
         
+        self.loadingView.translatesAutoresizingMaskIntoConstraints = false
+        self.loadingView.color = .white
+        
         self.addChild(self.playerController)
         self.view.addSubview(self.playerController.view)
         self.playerController.didMove(toParent: self)
+        
+        self.playerController.showsPlaybackControls = self.extra.showControls
+        
+        self.view.addSubview(self.loadingView)
         
         let audioSession = AVAudioSession.sharedInstance()
         do {
@@ -116,10 +132,28 @@ public class MediaPlayerController: UIViewController {
         setLayoutConstraints()
     }
     
+    public func setLoading(isLoading: Bool){
+        if isLoading {
+            self.loadingView.startAnimating()
+        } else {
+            self.loadingView.stopAnimating()
+        }
+    }
+    
+    public func setAllowHidingPlaybackControls(allowHiding: Bool){
+        if self.extra.showControls {
+            DispatchQueue.main.async {
+                self.playerController.setValue(allowHiding, forKey: "canHidePlaybackControls")
+            }
+        }
+    }
+    
     public func setLayoutConstraints(){
         NSLayoutConstraint.activate([
             self.view.widthAnchor.constraint(equalToConstant: self.placement.width),
             self.view.heightAnchor.constraint(equalToConstant: self.placement.height),
+            self.loadingView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            self.loadingView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor)
         ])
         
         if self.placement.horizontalAlignment == "START" {
