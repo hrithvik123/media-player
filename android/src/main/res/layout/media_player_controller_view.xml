@@ -11,5 +11,6 @@
     app:image_display_mode="fill"
     app:resize_mode="fit"
     app:show_buffering="when_playing"
-    app:surface_type="texture_view" />
+    app:surface_type="surface_view"
+    />
 
