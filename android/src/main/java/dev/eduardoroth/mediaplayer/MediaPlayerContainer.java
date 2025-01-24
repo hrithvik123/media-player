@@ -181,8 +181,16 @@ public class MediaPlayerContainer extends Fragment {
             }
         });
 
-        _mediaPlayerState.canUsePiP.set(_android.enablePiP && requireContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE));
-        _mediaPlayerState.fullscreenState.set(_android.openInFullscreen ? UI_STATE.WILL_ENTER : UI_STATE.WILL_EXIT);
+        if (_android.openInFullscreen) {
+            _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_ENTER);
+        } else {
+            boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+            if (_android.fullscreenOnLandscape && isLandscape) {
+                _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_ENTER);
+            } else {
+                _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_EXIT);
+            }
+        }
     }
 
     @Override
@@ -300,9 +308,7 @@ public class MediaPlayerContainer extends Fragment {
             return false;
         });
 
-        _mediaPlayerState.fullscreenState.observe(state -> {
-            ((ImageButton) _playerView.findViewById(R.id.toggle_fullscreen)).setImageResource(state == UI_STATE.ACTIVE ? R.drawable.ic_fullscreen_exit : R.drawable.ic_fullscreen_enter);
-        });
+        _mediaPlayerState.fullscreenState.observe(state -> ((ImageButton) _playerView.findViewById(R.id.toggle_fullscreen)).setImageResource(state == UI_STATE.ACTIVE ? R.drawable.ic_fullscreen_exit : R.drawable.ic_fullscreen_enter));
         _mediaPlayerState.pipState.observe(state -> {
             switch (state) {
                 case WILL_ENTER -> _playerView.setUseController(false);
