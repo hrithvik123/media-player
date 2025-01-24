@@ -234,7 +234,7 @@ public class MediaPlayerContainer extends Fragment {
         }
 
         ImageButton pipButton = extraControls.findViewById(R.id.pip_button);
-        if (_mediaPlayerState.canUsePiP.get()) {
+        if (_android.enablePiP) {
             pipButton.setVisibility(View.VISIBLE);
             pipButton.setOnClickListener(view -> _mediaPlayerState.pipState.set(MediaPlayerState.UI_STATE.WILL_ENTER));
         }
