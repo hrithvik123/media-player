@@ -16,6 +16,7 @@ import static androidx.media3.common.C.USAGE_MEDIA;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -50,11 +51,23 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
     public MediaSession onGetSession(@NonNull ControllerInfo controllerInfo) {
         String playerId = controllerInfo.getConnectionHints().getString("playerId", "no-player-id");
 
-        MediaSession doesSessionExists = this.getSessions()
-                .stream()
-                .filter(s -> s.getId().equals(playerId))
-                .findFirst()
-                .orElse(null);
+        MediaSession doesSessionExists = null;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            doesSessionExists = this.getSessions()
+                    .stream()
+                    .filter(s -> s.getId().equals(playerId))
+                    .findFirst()
+                    .orElse(null);
+        } else {
+            for (int i = 0; i < getSessions().toArray().length; i++) {
+                MediaSession s = (MediaSession) getSessions().toArray()[i];
+                if (s.getId().equals(playerId)) {
+                    doesSessionExists = s;
+                    break;
+                }
+            }
+        }
 
         String videoUrl = controllerInfo.getConnectionHints().getString("videoUrl");
         PlacementOptions placement = (PlacementOptions) controllerInfo.getConnectionHints().getSerializable("placement");
@@ -63,9 +76,6 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
         assert placement != null;
         assert android != null;
         assert extra != null;
-
-        mDispatcher.onServicePreSuperOnDestroy();
-        mDispatcher.onServicePreSuperOnStart();
 
         if (doesSessionExists != null) {
             String currentPlayerId = doesSessionExists.getSessionExtras().getString("playerId");
@@ -79,6 +89,9 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
             }
             return doesSessionExists;
         }
+
+        mDispatcher.onServicePreSuperOnDestroy();
+        mDispatcher.onServicePreSuperOnStart();
 
         MediaPlayerState mediaPlayerState = MediaPlayerStateProvider.createState(playerId, this);
         mediaPlayerState.placementOptions.set(placement);
@@ -194,7 +207,7 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
             if (!player.getPlayWhenReady() || player.getMediaItemCount() == 0 || player.getPlaybackState() == Player.STATE_ENDED) {
                 stopSelf();
             }
-            if(session.getSessionExtras().getBoolean("stopOnTaskRemoved")) {
+            if (session.getSessionExtras().getBoolean("stopOnTaskRemoved")) {
                 player.pause();
                 stopSelf();
             }

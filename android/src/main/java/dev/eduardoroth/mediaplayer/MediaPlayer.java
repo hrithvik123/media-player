@@ -62,7 +62,7 @@ public class MediaPlayer {
                 call.resolve(ret);
             } catch (Exception | Error futureError) {
                 ret.put("result", false);
-                ret.put("message", "An error occurred while creating player with id " + playerId);
+                ret.put("message", "An error occurred while creating player with id " + playerId + ".\n" + futureError.getMessage());
                 call.resolve(ret);
             }
         }, _currentActivity.getMainExecutor());
@@ -76,9 +76,9 @@ public class MediaPlayer {
             playerState.mediaController.get().play();
             ret.put("result", true);
             ret.put("value", true);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -91,9 +91,9 @@ public class MediaPlayer {
             playerState.mediaController.get().pause();
             ret.put("result", true);
             ret.put("value", true);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -106,9 +106,9 @@ public class MediaPlayer {
             long duration = playerState.mediaController.get().getDuration();
             ret.put("result", true);
             ret.put("value", duration == C.TIME_UNSET ? 0 : (duration / 1000));
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -121,9 +121,9 @@ public class MediaPlayer {
             long currentTime = playerState.mediaController.get().getCurrentPosition();
             ret.put("result", true);
             ret.put("value", currentTime == C.TIME_UNSET ? 0 : (currentTime / 1000));
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -140,9 +140,9 @@ public class MediaPlayer {
             controller.seekTo(seekPosition);
             ret.put("result", true);
             ret.put("value", seekPosition);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -154,9 +154,9 @@ public class MediaPlayer {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
             ret.put("result", true);
             ret.put("value", playerState.mediaController.get().isPlaying());
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -168,9 +168,9 @@ public class MediaPlayer {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
             ret.put("result", true);
             ret.put("value", playerState.mediaController.get().getVolume() == 0);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -183,9 +183,9 @@ public class MediaPlayer {
             playerState.mediaController.get().setVolume(0);
             ret.put("result", true);
             ret.put("value", true);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -197,9 +197,9 @@ public class MediaPlayer {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
             ret.put("result", true);
             ret.put("value", playerState.mediaController.get().getVolume());
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -212,9 +212,9 @@ public class MediaPlayer {
             playerState.mediaController.get().setVolume(volume.floatValue());
             ret.put("result", true);
             ret.put("value", volume);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -226,9 +226,9 @@ public class MediaPlayer {
             MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
             ret.put("result", true);
             ret.put("value", playerState.mediaController.get().getPlaybackParameters().speed);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -241,9 +241,9 @@ public class MediaPlayer {
             playerState.mediaController.get().setPlaybackSpeed(rate.floatValue());
             ret.put("result", true);
             ret.put("value", rate);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
@@ -261,9 +261,9 @@ public class MediaPlayer {
             MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED).build());
             ret.put("result", true);
             ret.put("value", playerId);
-        } catch (Error err) {
+        } catch (Error | Exception err) {
             ret.put("result", false);
-            ret.put("message", "Player not found");
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
