@@ -80,6 +80,9 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
             return doesSessionExists;
         }
 
+        mDispatcher.onServicePreSuperOnDestroy();
+        mDispatcher.onServicePreSuperOnStart();
+
         MediaPlayerState mediaPlayerState = MediaPlayerStateProvider.createState(playerId, this);
         mediaPlayerState.placementOptions.set(placement);
         mediaPlayerState.androidOptions.set(android);
