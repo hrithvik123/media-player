@@ -7,8 +7,10 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.Rational;
+import android.view.ViewGroup;
+
+import androidx.fragment.app.FragmentContainerView;
 
 import org.json.JSONException;
 
@@ -25,10 +27,14 @@ public class MediaPlayerPlugin extends Plugin {
 
     @Override
     public void load() {
-        bridge.getActivity().getSupportFragmentManager();
         implementation = new MediaPlayer(bridge.getActivity());
         MediaPlayerNotificationCenter.init(bridge.getActivity());
         MediaPlayerNotificationCenter.listenNotifications(nextNotification -> notifyListeners(nextNotification.getEventName(), nextNotification.getData()));
+
+        ViewGroup coordinatorLayout = (ViewGroup) bridge.getActivity().findViewById(R.id.webview).getParent();
+        FragmentContainerView fragmentContainerView = new FragmentContainerView(bridge.getContext());
+        fragmentContainerView.setId(R.id.MediaPlayerFragmentContainerView);
+        coordinatorLayout.addView(fragmentContainerView);
     }
 
     @PluginMethod
@@ -89,33 +95,33 @@ public class MediaPlayerPlugin extends Plugin {
         } else if (paramHeight != null) {
             height = (int) (paramHeight * metrics.density);
             if (Objects.equals(videoOrientation, "HORIZONTAL")) {
-                width = (int)(paramHeight * metrics.density * (new Rational(16, 9).floatValue()));
+                width = (int) (paramHeight * metrics.density * (new Rational(16, 9).floatValue()));
             } else {
-                width = (int)(paramHeight * metrics.density * (new Rational(9, 16).floatValue()));
+                width = (int) (paramHeight * metrics.density * (new Rational(9, 16).floatValue()));
             }
         } else {
             width = (int) (paramWidth * metrics.density);
             if (Objects.equals(videoOrientation, "HORIZONTAL")) {
-                height = (int)(width * (new Rational(16, 9).floatValue()));
+                height = (int) (width * (new Rational(16, 9).floatValue()));
             } else {
-                height = (int)(width * (new Rational(9, 16).floatValue()));
+                height = (int) (width * (new Rational(9, 16).floatValue()));
             }
         }
 
-        if (width + horizontalMargin > metrics.widthPixels){
+        if (width + horizontalMargin > metrics.widthPixels) {
             width = metrics.widthPixels - horizontalMargin;
-            if(Objects.equals(videoOrientation, "HORIZONTAL")){
-                height = (int)(width * (new Rational(9, 16).floatValue()));
+            if (Objects.equals(videoOrientation, "HORIZONTAL")) {
+                height = (int) (width * (new Rational(9, 16).floatValue()));
             } else {
-                height = (int)(width * (new Rational(16, 9).floatValue()));
+                height = (int) (width * (new Rational(16, 9).floatValue()));
             }
         }
-        if(height + verticalMargin > metrics.heightPixels){
+        if (height + verticalMargin > metrics.heightPixels) {
             height = metrics.heightPixels - verticalMargin;
-            if(Objects.equals(videoOrientation, "HORIZONTAL")){
-                width = (int)(height * (new Rational(16, 9).floatValue()));
+            if (Objects.equals(videoOrientation, "HORIZONTAL")) {
+                width = (int) (height * (new Rational(16, 9).floatValue()));
             } else {
-                width = (int)(height * (new Rational(9, 16).floatValue()));
+                width = (int) (height * (new Rational(9, 16).floatValue()));
             }
         }
 
