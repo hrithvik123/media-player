@@ -19,6 +19,8 @@ npx cap sync
 
 ## Android
 
+**Required** Gradle v7+
+
 For the plugin to work correctly, you have to set/add in your `AndroidManifest.xml` for your main activity the following setting for `android:configChanges`
 
 ```xml
