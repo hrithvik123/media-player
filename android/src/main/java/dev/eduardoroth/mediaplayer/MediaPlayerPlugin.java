@@ -81,10 +81,10 @@ public class MediaPlayerPlugin extends Plugin {
         } else if (paramHeight == null && paramWidth == null) {
             if (Objects.equals(videoOrientation, "HORIZONTAL")) {
                 width = metrics.widthPixels;
-                height = (int)(width * (new Rational(9, 16).longValue()));
+                height = (int) (width * (new Rational(9, 16).floatValue()));
             } else {
                 height = metrics.heightPixels;
-                width = (int)(height * (new Rational(9, 16).longValue()));
+                width = (int) (height * (new Rational(9, 16).floatValue()));
             }
         } else if (paramHeight != null) {
             height = (int) (paramHeight * metrics.density);
