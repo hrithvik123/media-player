@@ -23,5 +23,4 @@ jobs:
               --repo="$GITHUB_REPOSITORY" \
               --latest=${{ github.ref == 'refs/heads/main' && true || false }} \
               --title="${tag#v}" \
-              --generate-notes \
-              --discussion-category "Announcements"
+              --generate-notes
