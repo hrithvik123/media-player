@@ -21,5 +21,7 @@ jobs:
         run: |
           gh release create "$tag" \
               --repo="$GITHUB_REPOSITORY" \
+              --latest=${{ github.ref == 'refs/heads/main' && true || false }} \
               --title="${tag#v}" \
-              --generate-notes
+              --generate-notes \
+              --discussion-category "Announcements"
