@@ -1,5 +1,5 @@
 extension MediaPlayer {
-    
+
     func addMediaPlayerController(playerId: String, controller: MediaPlayerController) {
         controllers[playerId] = controller
     }

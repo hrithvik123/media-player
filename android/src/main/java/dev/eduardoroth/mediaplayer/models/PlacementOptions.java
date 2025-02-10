@@ -3,6 +3,7 @@ package dev.eduardoroth.mediaplayer.models;
 import java.io.Serializable;
 
 public class PlacementOptions implements Serializable {
+
     public String videoOrientation;
     public String horizontalAlignment;
     public String verticalAlignment;
@@ -14,7 +15,13 @@ public class PlacementOptions implements Serializable {
     public int verticalMargin;
 
     public PlacementOptions(
-            int height, int width, String videoOrientation, String horizontalAlignment, String verticalAlignment, int horizontalMargin, int verticalMargin
+        int height,
+        int width,
+        String videoOrientation,
+        String horizontalAlignment,
+        String verticalAlignment,
+        int horizontalMargin,
+        int verticalMargin
     ) {
         this.height = height;
         this.width = width;

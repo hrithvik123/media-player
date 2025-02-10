@@ -81,12 +81,12 @@ extension MediaPlayerPlugin {
             self.notifyListeners("MediaPlayer:PictureInPicture", data: info)
         }
     }
-    
+
     @objc func mediaPlayerIsPlayingInBackground(notification: Notification) {
         guard let info = notification.userInfo as? [String: Any] else { return }
         DispatchQueue.main.async {
             self.notifyListeners("MediaPlayer:isPlayingInBackground", data: info)
         }
     }
-    
+
 }

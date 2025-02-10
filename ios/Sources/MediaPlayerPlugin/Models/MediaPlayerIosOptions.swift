@@ -11,7 +11,7 @@ public class MediaPlayerIosOptions: NSObject {
     var fullscreenOnLandscape: Bool
     var allowsVideoFrameAnalysis: Bool
 
-    init(enableExternalPlayback: Bool?, enablePiP: Bool?, enableBackgroundPlay: Bool?, openInFullscreen: Bool?, automaticallyEnterPiP: Bool?, automaticallyHideBackgroundForPip: Bool?, fullscreenOnLandscape: Bool?, allowsVideoFrameAnalysis: Bool?){
+    init(enableExternalPlayback: Bool?, enablePiP: Bool?, enableBackgroundPlay: Bool?, openInFullscreen: Bool?, automaticallyEnterPiP: Bool?, automaticallyHideBackgroundForPip: Bool?, fullscreenOnLandscape: Bool?, allowsVideoFrameAnalysis: Bool?) {
         self.enableExternalPlayback = enableExternalPlayback ?? true
         self.enablePiP = enablePiP ?? true
         self.enableBackgroundPlay = enableBackgroundPlay ?? true

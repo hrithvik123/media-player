@@ -2,11 +2,11 @@ import Foundation
 import AVKit
 
 extension MediaPlayerController {
- 
+
     func setSubtitles() {
-        
+
         if var subTitleUrl = self.extra.subtitles?.url {
-            //check if subtitle is .srt
+            // check if subtitle is .srt
             if subTitleUrl.pathExtension == "srt" {
                 let vttUrl: URL = srtSubtitleToVtt(srtURL: subTitleUrl)
                 subTitleUrl = vttUrl
@@ -41,7 +41,7 @@ extension MediaPlayerController {
                                                             duration: self.videoAsset.duration),
                                                            of: clipAudioTrack, at: CMTime.zero)
                         }
-                        //Adds subtitle track
+                        // Adds subtitle track
                         if let subtitleTrack = composition.addMutableTrack(
                             withMediaType: .text,
                             preferredTrackID: kCMPersistentTrackID_Invalid) {
@@ -64,7 +64,6 @@ extension MediaPlayerController {
         }
     }
 
-    
     private func setSubTitleStyle(options: MediaPlayerSubtitleSettings) -> [AVTextStyleRule] {
         var styles: [AVTextStyleRule] = []
         var backColor: [Float] = [1.0, 0.0, 0.0, 0.0]
@@ -102,7 +101,6 @@ extension MediaPlayerController {
         return styles
     }
 
-    
     private func getColorFromRGBA(rgba: String) -> [Float] {
         if let oPar = rgba.firstIndex(of: "(") {
             if let cPar = rgba.firstIndex(of: ")") {

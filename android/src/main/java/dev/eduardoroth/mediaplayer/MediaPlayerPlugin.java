@@ -1,35 +1,33 @@
 package dev.eduardoroth.mediaplayer;
 
+import android.util.DisplayMetrics;
+import android.util.Rational;
+import android.view.ViewGroup;
+import androidx.fragment.app.FragmentContainerView;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-
-import android.util.DisplayMetrics;
-import android.util.Rational;
-import android.view.ViewGroup;
-
-import androidx.fragment.app.FragmentContainerView;
-
-import org.json.JSONException;
-
-import java.util.Objects;
-
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 import dev.eduardoroth.mediaplayer.models.SubtitleOptions;
+import java.util.Objects;
+import org.json.JSONException;
 
 @CapacitorPlugin(name = "MediaPlayer")
 public class MediaPlayerPlugin extends Plugin {
+
     private MediaPlayer implementation;
 
     @Override
     public void load() {
         implementation = new MediaPlayer(bridge.getActivity());
         MediaPlayerNotificationCenter.init(bridge.getActivity());
-        MediaPlayerNotificationCenter.listenNotifications(nextNotification -> notifyListeners(nextNotification.getEventName(), nextNotification.getData()));
+        MediaPlayerNotificationCenter.listenNotifications(nextNotification ->
+            notifyListeners(nextNotification.getEventName(), nextNotification.getData())
+        );
 
         ViewGroup coordinatorLayout = (ViewGroup) bridge.getActivity().findViewById(R.id.webview).getParent();
         FragmentContainerView fragmentContainerView = new FragmentContainerView(bridge.getContext());
@@ -125,16 +123,24 @@ public class MediaPlayerPlugin extends Plugin {
             }
         }
 
-        PlacementOptions placement = new PlacementOptions(height, width, videoOrientation, horizontalAlignment, verticalAlignment, horizontalMargin, verticalMargin);
+        PlacementOptions placement = new PlacementOptions(
+            height,
+            width,
+            videoOrientation,
+            horizontalAlignment,
+            verticalAlignment,
+            horizontalMargin,
+            verticalMargin
+        );
 
         AndroidOptions android = new AndroidOptions(
-                androidOptions == null || androidOptions.optBoolean("enableChromecast", true),
-                androidOptions == null || androidOptions.optBoolean("enablePiP", true),
-                androidOptions == null || androidOptions.optBoolean("enableBackgroundPlay", true),
-                androidOptions != null && androidOptions.optBoolean("openInFullscreen", false),
-                androidOptions != null && androidOptions.optBoolean("automaticallyEnterPiP", false),
-                androidOptions == null || androidOptions.optBoolean("fullscreenOnLandscape", true),
-                androidOptions == null || androidOptions.optBoolean("stopOnTaskRemoved", false)
+            androidOptions == null || androidOptions.optBoolean("enableChromecast", true),
+            androidOptions == null || androidOptions.optBoolean("enablePiP", true),
+            androidOptions == null || androidOptions.optBoolean("enableBackgroundPlay", true),
+            androidOptions != null && androidOptions.optBoolean("openInFullscreen", false),
+            androidOptions != null && androidOptions.optBoolean("automaticallyEnterPiP", false),
+            androidOptions == null || androidOptions.optBoolean("fullscreenOnLandscape", true),
+            androidOptions == null || androidOptions.optBoolean("stopOnTaskRemoved", false)
         );
 
         SubtitleOptions subtitles = null;
@@ -142,28 +148,33 @@ public class MediaPlayerPlugin extends Plugin {
             double fontSize = Double.parseDouble("12");
             try {
                 fontSize = subtitleOptions.getDouble("fontSize");
-            } catch (NullPointerException | JSONException ignored) {
-            }
-            subtitles = new SubtitleOptions(subtitleOptions.getString("url", null), subtitleOptions.getString("language", "English"), subtitleOptions.getString("foregroundColor", null), subtitleOptions.getString("backgroundColor", null), fontSize);
+            } catch (NullPointerException | JSONException ignored) {}
+            subtitles = new SubtitleOptions(
+                subtitleOptions.getString("url", null),
+                subtitleOptions.getString("language", "English"),
+                subtitleOptions.getString("foregroundColor", null),
+                subtitleOptions.getString("backgroundColor", null),
+                fontSize
+            );
         }
 
         double rate = 1;
         try {
             rate = extraOptions.getDouble("rate");
-        } catch (NullPointerException | JSONException ignored) {
-        }
+        } catch (NullPointerException | JSONException ignored) {}
 
         ExtraOptions extra = new ExtraOptions(
-                extraOptions != null ? extraOptions.getString("title") : null,
-                extraOptions != null ? extraOptions.getString("subtitle") : null,
-                extraOptions != null ? extraOptions.getString("poster", null) : null,
-                extraOptions != null ? extraOptions.getString("artist", null) : null,
-                rate,
-                subtitles,
-                extraOptions != null && extraOptions.optBoolean("autoPlayWhenReady", false),
-                extraOptions != null && extraOptions.optBoolean("loopOnEnd", false),
-                extraOptions == null || extraOptions.optBoolean("showControls", true),
-                extraOptions != null ? extraOptions.getJSObject("headers") : null);
+            extraOptions != null ? extraOptions.getString("title") : null,
+            extraOptions != null ? extraOptions.getString("subtitle") : null,
+            extraOptions != null ? extraOptions.getString("poster", null) : null,
+            extraOptions != null ? extraOptions.getString("artist", null) : null,
+            rate,
+            subtitles,
+            extraOptions != null && extraOptions.optBoolean("autoPlayWhenReady", false),
+            extraOptions != null && extraOptions.optBoolean("loopOnEnd", false),
+            extraOptions == null || extraOptions.optBoolean("showControls", true),
+            extraOptions != null ? extraOptions.getJSObject("headers") : null
+        );
         bridge.getActivity().runOnUiThread(() -> implementation.create(call, playerId, url, placement, android, extra));
     }
 
@@ -389,5 +400,4 @@ public class MediaPlayerPlugin extends Plugin {
     public void removeAll(final PluginCall call) {
         bridge.getActivity().runOnUiThread(() -> implementation.removeAll(call));
     }
-
 }

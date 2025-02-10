@@ -3,10 +3,10 @@ package dev.eduardoroth.mediaplayer.state;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.media3.common.util.UnstableApi;
-
 import java.util.HashMap;
 
 public class MediaPlayerStateProvider {
+
     private static final MediaPlayerStateProvider _provider = new MediaPlayerStateProvider();
     private final HashMap<String, MediaPlayerState> _instances = new HashMap<>();
 

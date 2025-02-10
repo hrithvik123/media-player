@@ -1,7 +1,6 @@
 package dev.eduardoroth.mediaplayer.models;
 
 import com.getcapacitor.JSObject;
-
 import dev.eduardoroth.mediaplayer.MediaPlayerNotificationCenter.CapacitorNotification;
 import dev.eduardoroth.mediaplayer.MediaPlayerNotificationCenter.NOTIFICATION_TYPE;
 
@@ -35,5 +34,4 @@ public class MediaPlayerNotification {
     public CapacitorNotification build() {
         return new CapacitorNotification(_notificationType.toString(), _notificationData);
     }
-
 }

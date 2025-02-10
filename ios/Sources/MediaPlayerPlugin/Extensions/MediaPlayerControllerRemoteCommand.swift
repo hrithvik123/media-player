@@ -3,20 +3,20 @@ import MediaPlayer
 extension MediaPlayerController {
     func setRemoteCommandCenter() {
         let rcc = MPRemoteCommandCenter.shared()
-        
+
         rcc.togglePlayPauseCommand.isEnabled = true
-        rcc.togglePlayPauseCommand.addTarget {event in
+        rcc.togglePlayPauseCommand.addTarget {_ in
             self.player.timeControlStatus == .playing ? self.player.pause() : self.player.play()
             return .success
         }
-        
+
         rcc.playCommand.isEnabled = true
-        rcc.playCommand.addTarget {event in
+        rcc.playCommand.addTarget {_ in
             self.player.play()
             return .success
         }
         rcc.pauseCommand.isEnabled = true
-        rcc.pauseCommand.addTarget {event in
+        rcc.pauseCommand.addTarget {_ in
             self.player.pause()
             return .success
         }
@@ -28,7 +28,7 @@ extension MediaPlayerController {
             return .success
         }
         rcc.skipForwardCommand.isEnabled = true
-        rcc.skipForwardCommand.addTarget {event in
+        rcc.skipForwardCommand.addTarget {_ in
             if let currentItem = self.player.currentItem {
                 let currentTime = CMTimeGetSeconds(currentItem.currentTime()) + 10
                 self.player.seek(to: CMTimeMakeWithSeconds(currentTime, preferredTimescale: 1))
@@ -38,7 +38,7 @@ extension MediaPlayerController {
             }
         }
         rcc.skipBackwardCommand.isEnabled = true
-        rcc.skipBackwardCommand.addTarget {event in
+        rcc.skipBackwardCommand.addTarget {_ in
             if let currentItem = self.player.currentItem {
                 let currentTime = CMTimeGetSeconds(currentItem.currentTime()) - 10
                 self.player.seek(to: CMTimeMakeWithSeconds(currentTime, preferredTimescale: 1))
@@ -47,12 +47,12 @@ extension MediaPlayerController {
                 return .commandFailed
             }
         }
-        
+
         // Next and previous track buttons are disabled because we don't have more than 1 video
         rcc.nextTrackCommand.isEnabled = false
         rcc.previousTrackCommand.isEnabled = false
     }
-    
+
     func clearRemoteCommandCenter() {
         let rcc = MPRemoteCommandCenter.shared()
         rcc.changePlaybackPositionCommand.isEnabled = false

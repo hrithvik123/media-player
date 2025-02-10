@@ -4,14 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
 import com.getcapacitor.JSObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class MediaPlayerNotificationCenter extends ViewModel {
+
     public enum NOTIFICATION_TYPE {
         MEDIA_PLAYER_READY {
             @NonNull
@@ -19,55 +17,64 @@ public class MediaPlayerNotificationCenter extends ViewModel {
             public String toString() {
                 return "MediaPlayer:Ready";
             }
-        }, MEDIA_PLAYER_PLAY {
+        },
+        MEDIA_PLAYER_PLAY {
             @NonNull
             @Override
             public String toString() {
                 return "MediaPlayer:Play";
             }
-        }, MEDIA_PLAYER_PAUSE {
+        },
+        MEDIA_PLAYER_PAUSE {
             @NonNull
             @Override
             public String toString() {
                 return "MediaPlayer:Pause";
             }
-        }, MEDIA_PLAYER_ENDED {
+        },
+        MEDIA_PLAYER_ENDED {
             @NonNull
             @Override
             public String toString() {
                 return "MediaPlayer:Ended";
             }
-        }, MEDIA_PLAYER_REMOVED {
+        },
+        MEDIA_PLAYER_REMOVED {
             @NonNull
             @Override
             public String toString() {
                 return "MediaPlayer:Removed";
             }
-        }, MEDIA_PLAYER_SEEK {
+        },
+        MEDIA_PLAYER_SEEK {
             @NonNull
             @Override
             public String toString() {
                 return "MediaPlayer:Seek";
             }
-        }, MEDIA_PLAYER_TIME_UPDATED {
+        },
+        MEDIA_PLAYER_TIME_UPDATED {
             @NonNull
             @Override
             public String toString() {
                 return "MediaPlayer:TimeUpdated";
             }
-        }, MEDIA_PLAYER_FULLSCREEN {
+        },
+        MEDIA_PLAYER_FULLSCREEN {
             @NonNull
             @Override
             public String toString() {
                 return "MediaPlayer:FullScreen";
             }
-        }, MEDIA_PLAYER_PIP {
+        },
+        MEDIA_PLAYER_PIP {
             @NonNull
             @Override
             public String toString() {
                 return "MediaPlayer:PictureInPicture";
             }
-        }, MEDIA_PLAYER_BACKGROUND_PLAYING {
+        },
+        MEDIA_PLAYER_BACKGROUND_PLAYING {
             @NonNull
             @Override
             public String toString() {
@@ -76,8 +83,7 @@ public class MediaPlayerNotificationCenter extends ViewModel {
         }
     }
 
-    public record CapacitorNotification(String getEventName, JSObject getData) {
-    }
+    public record CapacitorNotification(String getEventName, JSObject getData) {}
 
     public interface OnNextNotification {
         void send(CapacitorNotification notification);
@@ -125,5 +131,4 @@ public class MediaPlayerNotificationCenter extends ViewModel {
         updatedList.add(notification);
         _notificationCenter._pendingNotifications.setValue(updatedList);
     }
-
 }

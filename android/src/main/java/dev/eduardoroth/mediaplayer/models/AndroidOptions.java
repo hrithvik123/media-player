@@ -3,6 +3,7 @@ package dev.eduardoroth.mediaplayer.models;
 import java.io.Serializable;
 
 public class AndroidOptions implements Serializable {
+
     public boolean enableChromecast;
     public boolean enablePiP;
     public boolean enableBackgroundPlay;
@@ -11,7 +12,15 @@ public class AndroidOptions implements Serializable {
     public boolean fullscreenOnLandscape;
     public boolean stopOnTaskRemoved;
 
-    public AndroidOptions(boolean enableChromecast, boolean enablePiP, boolean enableBackgroundPlay, boolean openInFullscreen, boolean automaticallyEnterPiP, boolean fullscreenOnLandscape, boolean stopOnTaskRemoved) {
+    public AndroidOptions(
+        boolean enableChromecast,
+        boolean enablePiP,
+        boolean enableBackgroundPlay,
+        boolean openInFullscreen,
+        boolean automaticallyEnterPiP,
+        boolean fullscreenOnLandscape,
+        boolean stopOnTaskRemoved
+    ) {
         this.enableChromecast = enableChromecast;
         this.enablePiP = enablePiP;
         this.enableBackgroundPlay = enableBackgroundPlay;

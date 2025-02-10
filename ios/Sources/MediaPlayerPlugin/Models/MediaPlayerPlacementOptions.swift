@@ -5,21 +5,21 @@ public class MediaPlayerPlacementOptions: NSObject {
     var videoOrientation: String
     var horizontalAlignment: String
     var verticalAlignment: String
-    
+
     var height: CGFloat = CGFloat(0)
     var width: CGFloat = CGFloat(0)
-    
+
     var horizontalMargin: CGFloat
     var verticalMargin: CGFloat
 
-    init(height: Float?, width: Float?, videoOrientation: String?, verticalMargin: Float?, horizontalMargin: Float?, horizontalAlignment: String?, verticalAlignment: String?){
+    init(height: Float?, width: Float?, videoOrientation: String?, verticalMargin: Float?, horizontalMargin: Float?, horizontalAlignment: String?, verticalAlignment: String?) {
         self.videoOrientation = videoOrientation ?? "HORIZONTAL"
         self.horizontalAlignment = horizontalAlignment ?? "CENTER"
         self.verticalAlignment = verticalAlignment ?? "TOP"
-        
+
         self.horizontalMargin = CGFloat(horizontalMargin ?? 0)
         self.verticalMargin = CGFloat(verticalMargin ?? 0)
-        
+
         if height != nil && width != nil {
             self.height = CGFloat(height!)
             self.width = CGFloat(width!)
@@ -55,7 +55,7 @@ public class MediaPlayerPlacementOptions: NSObject {
                 self.height = 16/9 * self.width
             }
         }
-        
+
         if (self.height + CGFloat(verticalMargin ?? 0)) > UIScreen.main.bounds.height {
             self.height = UIScreen.main.bounds.height - self.verticalMargin
             if self.videoOrientation == "HORIZONTAL" {

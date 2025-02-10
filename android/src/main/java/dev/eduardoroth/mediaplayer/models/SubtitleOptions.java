@@ -3,6 +3,7 @@ package dev.eduardoroth.mediaplayer.models;
 import java.io.Serializable;
 
 public class SubtitleOptions implements Serializable {
+
     public String url;
     public SubtitleSettings settings;
 
@@ -10,5 +11,4 @@ public class SubtitleOptions implements Serializable {
         this.url = url;
         this.settings = new SubtitleSettings(language, foregroundColor, backgroundColor, fontSize);
     }
-
 }

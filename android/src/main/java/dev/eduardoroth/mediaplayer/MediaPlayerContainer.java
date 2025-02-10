@@ -20,7 +20,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
@@ -34,9 +33,7 @@ import androidx.media3.ui.CaptionStyleCompat;
 import androidx.media3.ui.PlayerView;
 import androidx.media3.ui.SubtitleView;
 import androidx.mediarouter.app.MediaRouteButton;
-
 import com.google.android.gms.cast.framework.CastButtonFactory;
-
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
@@ -71,25 +68,25 @@ public class MediaPlayerContainer extends Fragment {
         _placement = _mediaPlayerState.placementOptions.get();
         _android = _mediaPlayerState.androidOptions.get();
         _extra = _mediaPlayerState.extraOptions.get();
-        requireActivity().addOnPictureInPictureModeChangedListener(state -> {
-            if (getLifecycle().getCurrentState() == Lifecycle.State.CREATED) {
-                _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_EXIT);
-                _mediaPlayerState.pipState.set(UI_STATE.WILL_EXIT);
-                if (!_android.enableBackgroundPlay) {
-                    _playerController.pause();
-                }
-            } else if (getLifecycle().getCurrentState() == Lifecycle.State.STARTED) {
-                if (state.isInPictureInPictureMode()) {
-                    if (_mediaPlayerState.fullscreenState.get() != UI_STATE.ACTIVE) {
-                        _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_ENTER);
-                    }
-                } else {
+        requireActivity()
+            .addOnPictureInPictureModeChangedListener(state -> {
+                if (getLifecycle().getCurrentState() == Lifecycle.State.CREATED) {
                     _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_EXIT);
                     _mediaPlayerState.pipState.set(UI_STATE.WILL_EXIT);
+                    if (!_android.enableBackgroundPlay) {
+                        _playerController.pause();
+                    }
+                } else if (getLifecycle().getCurrentState() == Lifecycle.State.STARTED) {
+                    if (state.isInPictureInPictureMode()) {
+                        if (_mediaPlayerState.fullscreenState.get() != UI_STATE.ACTIVE) {
+                            _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_ENTER);
+                        }
+                    } else {
+                        _mediaPlayerState.fullscreenState.set(UI_STATE.WILL_EXIT);
+                        _mediaPlayerState.pipState.set(UI_STATE.WILL_EXIT);
+                    }
                 }
-            }
-
-        });
+            });
     }
 
     @OptIn(markerClass = UnstableApi.class)
@@ -99,14 +96,22 @@ public class MediaPlayerContainer extends Fragment {
 
         _mediaPlayerState.pipState.observe(state -> {
             switch (state) {
-                case ACTIVE ->
-                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", true).build());
-                case INACTIVE ->
-                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP).addData("isInPictureInPicture", false).build());
+                case ACTIVE -> MediaPlayerNotificationCenter.post(
+                    MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP)
+                        .addData("isInPictureInPicture", true)
+                        .build()
+                );
+                case INACTIVE -> MediaPlayerNotificationCenter.post(
+                    MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_PIP)
+                        .addData("isInPictureInPicture", false)
+                        .build()
+                );
                 case WILL_ENTER -> {
                     _embeddedView.findViewById(R.id.MediaPlayerEmbeddedPiP).setVisibility(View.VISIBLE);
 
-                    PictureInPictureParams.Builder pictureInPictureParams = new PictureInPictureParams.Builder().setSourceRectHint(_mediaPlayerState.sourceRectHint.get()).setAspectRatio(new Rational(_placement.width, _placement.height));
+                    PictureInPictureParams.Builder pictureInPictureParams = new PictureInPictureParams.Builder()
+                        .setSourceRectHint(_mediaPlayerState.sourceRectHint.get())
+                        .setAspectRatio(new Rational(_placement.width, _placement.height));
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         pictureInPictureParams.setAutoEnterEnabled(_android.automaticallyEnterPiP);
@@ -128,14 +133,28 @@ public class MediaPlayerContainer extends Fragment {
         });
         View decorView = requireActivity().getWindow().getDecorView();
         int defaultUiVisibility = decorView.getSystemUiVisibility();
-        int fullscreenUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        int fullscreenUiVisibility =
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_LOW_PROFILE |
+            View.SYSTEM_UI_FLAG_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         ActionBar actionBar = getSupportActionBar();
         _mediaPlayerState.fullscreenState.observe(state -> {
             switch (state) {
-                case ACTIVE ->
-                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", true).build());
-                case INACTIVE ->
-                        MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN).addData("isInFullScreen", false).build());
+                case ACTIVE -> MediaPlayerNotificationCenter.post(
+                    MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN)
+                        .addData("isInFullScreen", true)
+                        .build()
+                );
+                case INACTIVE -> MediaPlayerNotificationCenter.post(
+                    MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_FULLSCREEN)
+                        .addData("isInFullScreen", false)
+                        .build()
+                );
                 case WILL_ENTER -> {
                     _embeddedView.findViewById(R.id.MediaPlayerEmbeddedContainer).setVisibility(View.GONE);
                     _fullscreenView.findViewById(R.id.MediaPlayerFullscreenContainer).setVisibility(View.VISIBLE);
@@ -246,10 +265,8 @@ public class MediaPlayerContainer extends Fragment {
         ImageButton _fullscreenToggle = extraControls.findViewById(R.id.toggle_fullscreen);
         _fullscreenToggle.setOnClickListener(view -> {
             switch (_mediaPlayerState.fullscreenState.get()) {
-                case ACTIVE ->
-                        _mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_EXIT);
-                case INACTIVE ->
-                        _mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_ENTER);
+                case ACTIVE -> _mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_EXIT);
+                case INACTIVE -> _mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_ENTER);
             }
         });
 
@@ -263,7 +280,16 @@ public class MediaPlayerContainer extends Fragment {
         SubtitleView subtitleView = _playerView.findViewById(androidx.media3.ui.R.id.exo_subtitles);
 
         if (subtitleView != null && _extra.subtitles != null) {
-            subtitleView.setStyle(new CaptionStyleCompat(_extra.subtitles.settings.foregroundColor, _extra.subtitles.settings.backgroundColor, Color.TRANSPARENT, CaptionStyleCompat.EDGE_TYPE_NONE, Color.WHITE, null));
+            subtitleView.setStyle(
+                new CaptionStyleCompat(
+                    _extra.subtitles.settings.foregroundColor,
+                    _extra.subtitles.settings.backgroundColor,
+                    Color.TRANSPARENT,
+                    CaptionStyleCompat.EDGE_TYPE_NONE,
+                    Color.WHITE,
+                    null
+                )
+            );
             subtitleView.setFixedTextSize(TypedValue.COMPLEX_UNIT_DIP, _extra.subtitles.settings.fontSize.floatValue());
         }
 
@@ -308,7 +334,11 @@ public class MediaPlayerContainer extends Fragment {
             return false;
         });
 
-        _mediaPlayerState.fullscreenState.observe(state -> ((ImageButton) _playerView.findViewById(R.id.toggle_fullscreen)).setImageResource(state == UI_STATE.ACTIVE ? R.drawable.ic_fullscreen_exit : R.drawable.ic_fullscreen_enter));
+        _mediaPlayerState.fullscreenState.observe(state ->
+            ((ImageButton) _playerView.findViewById(R.id.toggle_fullscreen)).setImageResource(
+                    state == UI_STATE.ACTIVE ? R.drawable.ic_fullscreen_exit : R.drawable.ic_fullscreen_enter
+                )
+        );
         _mediaPlayerState.pipState.observe(state -> {
             switch (state) {
                 case WILL_ENTER -> _playerView.setUseController(false);
@@ -320,7 +350,7 @@ public class MediaPlayerContainer extends Fragment {
             _playerView.findViewById(R.id.cast_button).setEnabled(isCastAvailable);
         });
         _mediaPlayerState.showSubtitles.observe(showSubtitles ->
-                _playerView.findViewById(androidx.media3.ui.R.id.exo_subtitle).setVisibility(showSubtitles ? View.VISIBLE : View.GONE)
+            _playerView.findViewById(androidx.media3.ui.R.id.exo_subtitle).setVisibility(showSubtitles ? View.VISIBLE : View.GONE)
         );
 
         return _playerView;
@@ -391,7 +421,11 @@ public class MediaPlayerContainer extends Fragment {
     @Override
     public void onPause() {
         if (_android.enableBackgroundPlay) {
-            MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_BACKGROUND_PLAYING).addData("isPlayingInBackground", true).build());
+            MediaPlayerNotificationCenter.post(
+                MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_BACKGROUND_PLAYING)
+                    .addData("isPlayingInBackground", true)
+                    .build()
+            );
         } else {
             if (_mediaPlayerState.pipState.get() != UI_STATE.ACTIVE) {
                 _playerController.pause();
@@ -404,10 +438,13 @@ public class MediaPlayerContainer extends Fragment {
     @Override
     public void onResume() {
         if (_android.enableBackgroundPlay) {
-            MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_BACKGROUND_PLAYING).addData("isPlayingInBackground", false).build());
+            MediaPlayerNotificationCenter.post(
+                MediaPlayerNotification.create(_playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_BACKGROUND_PLAYING)
+                    .addData("isPlayingInBackground", false)
+                    .build()
+            );
         }
 
         super.onResume();
     }
-
 }

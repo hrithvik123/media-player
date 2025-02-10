@@ -5,7 +5,7 @@ import AVKit
 
 @objc(MediaPlayerPlugin)
 public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
-    
+
     public let identifier = "MediaPlayerPlugin"
     public let jsName = "MediaPlayer"
 
@@ -29,10 +29,10 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
     private let implementation = MediaPlayer()
 
-    var mediaPlayerPlayObserver: Any?;
-    var mediaPlayerPauseObserver: Any?;
-    var mediaPlayerEndedObserver: Any?;
-    var mediaPlayerReadyObserver: Any?;
+    var mediaPlayerPlayObserver: Any?
+    var mediaPlayerPauseObserver: Any?
+    var mediaPlayerEndedObserver: Any?
+    var mediaPlayerReadyObserver: Any?
     var mediaPlayerSeekObserver: Any?
     var mediaPlayerTimeUpdatedObserver: Any?
     var mediaPlayerFullscreenObserver: Any?
@@ -40,28 +40,28 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     var mediaPlayerIsPlayingInBackgroundObserver: Any?
 
     override public func load() {
-        addNotificationCenterObservers();
+        addNotificationCenterObservers()
         implementation.setBridge(bridge: self.bridge!)
     }
 
     deinit {
-        removeNotificationCenterObservers();
+        removeNotificationCenterObservers()
     }
 
     @objc func create(_ call: CAPPluginCall) {
         guard let playerId = call.options["playerId"] as? String else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "play", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "play", "message": error])
             return
         }
         guard let url = call.options["url"] as? String else {
             let error: String = "Must provide a url"
-            print(error);
-            call.resolve(["result": false, "method": "play", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "play", "message": error])
             return
         }
-        
+
         let dictUrl: [String: Any] = getURLFromFilePath(filePath: url)
         if let message = dictUrl["message"] as? String {
             if message.count > 0 {
@@ -74,16 +74,15 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
 
-
         let placementOptions = call.options["placement"] as? [String: Any] ?? [:]
         let iosOptions = call.options["ios"] as? [String: Any] ?? [:]
         let extraOptions = call.options["extra"] as? [String: Any] ?? [:]
         let subtitleOptions = extraOptions["subtitles"] as? [String: Any] ?? nil
-        
+
         let ios = MediaPlayerIosOptions(
             enableExternalPlayback: iosOptions["enableExternalPlayback"] as? Bool, enablePiP: iosOptions["enablePiP"] as? Bool, enableBackgroundPlay: iosOptions["enableBackgroundPlay"] as? Bool, openInFullscreen: iosOptions["openInFullscreen"] as? Bool, automaticallyEnterPiP: iosOptions["automaticallyEnterPiP"] as? Bool, automaticallyHideBackgroundForPip: iosOptions["automaticallyHideBackgroundForPip"] as? Bool, fullscreenOnLandscape: iosOptions["fullscreenOnLandscape"] as? Bool, allowsVideoFrameAnalysis: iosOptions["allowsVideoFrameAnalysis"] as? Bool
         )
-                        
+
         var subTitle: URL?
         if subtitleOptions != nil {
             let dictSubTitle: [String: Any] = getURLFromFilePath(filePath: subtitleOptions!["url"] as! String)
@@ -101,9 +100,9 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
             }
             subTitle = sturl
         }
-        
+
         let subtitles = (subtitleOptions != nil) ? MediaPlayerSubtitleOptions(
-            url: subTitle!, language: subtitleOptions?["language"] as? String, foregroundColor: subtitleOptions!["foregroundColor"] as? String, backgroundColor: subtitleOptions!["backgroundColor"] as? String, fontSize:subtitleOptions?["fontSize"] as? Float
+            url: subTitle!, language: subtitleOptions?["language"] as? String, foregroundColor: subtitleOptions!["foregroundColor"] as? String, backgroundColor: subtitleOptions!["backgroundColor"] as? String, fontSize: subtitleOptions?["fontSize"] as? Float
         ) : nil
 
         var posterURL: URL?
@@ -113,24 +112,24 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
                 posterURL = parsedUrl
             }
         }
-        
+
         let extra = MediaPlayerExtraOptions(
-            title: extraOptions["title"] as? String, subtitle: extraOptions["subtitle"] as? String, poster: posterURL, artist: extraOptions["artist"] as? String, rate: extraOptions["rate"] as? Float, subtitles: subtitles, autoPlayWhenReady: extraOptions["autoPlayWhenReady"] as? Bool, loopOnEnd: extraOptions["loopOnEnd"] as? Bool, showControls:extraOptions["showControls"] as? Bool, headers: extraOptions["headers"] as? [String: String]
+            title: extraOptions["title"] as? String, subtitle: extraOptions["subtitle"] as? String, poster: posterURL, artist: extraOptions["artist"] as? String, rate: extraOptions["rate"] as? Float, subtitles: subtitles, autoPlayWhenReady: extraOptions["autoPlayWhenReady"] as? Bool, loopOnEnd: extraOptions["loopOnEnd"] as? Bool, showControls: extraOptions["showControls"] as? Bool, headers: extraOptions["headers"] as? [String: String]
         )
 
         let placement = MediaPlayerPlacementOptions(
             height: placementOptions["height"] as? Float, width: placementOptions["width"] as? Float, videoOrientation: placementOptions["videoOrientation"] as? String,
             verticalMargin: placementOptions["verticalMargin"] as? Float, horizontalMargin: placementOptions["horizontalMargin"] as? Float, horizontalAlignment: placementOptions["horizontalAlignment"] as? String, verticalAlignment: placementOptions["verticalAlignment"] as? String
         )
-        
+
         implementation.create(call: call, playerId: playerId, url: parsedUrl, placement: placement, ios: ios, extra: extra)
     }
 
     @objc func play(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "play", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "play", "message": error])
             return
         }
         implementation.play(call: call, playerId: playerId)
@@ -139,8 +138,8 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func pause(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "pause", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "pause", "message": error])
             return
         }
         implementation.pause(call: call, playerId: playerId)
@@ -149,8 +148,8 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func getDuration(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "getDuration", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "getDuration", "message": error])
             return
         }
         implementation.getDuration(call: call, playerId: playerId)
@@ -159,60 +158,60 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func getCurrentTime(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "getCurrentTime", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "getCurrentTime", "message": error])
             return
         }
-        implementation.getCurrentTime(call: call, playerId: playerId);
+        implementation.getCurrentTime(call: call, playerId: playerId)
     }
 
     @objc func setCurrentTime(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "setCurrentTime", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "setCurrentTime", "message": error])
             return
         }
         guard let time = call.getDouble("time") else {
             let error: String = "Must provide a time"
-            print(error);
-            call.resolve(["result": false, "method": "setCurrentTime", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "setCurrentTime", "message": error])
             return
         }
-        implementation.setCurrentTime(call: call, playerId: playerId, time: time);
+        implementation.setCurrentTime(call: call, playerId: playerId, time: time)
     }
 
     @objc func isPlaying(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "isPlaying", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "isPlaying", "message": error])
             return
         }
-        implementation.isPlaying(call: call, playerId: playerId);
+        implementation.isPlaying(call: call, playerId: playerId)
     }
 
     @objc func isMuted(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "isMuted", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "isMuted", "message": error])
             return
         }
         implementation.isMuted(call: call, playerId: playerId)
     }
-    
+
     @objc func setVisibilityBackgroundForPiP(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "setVisibilityBackgroundForPiP", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "setVisibilityBackgroundForPiP", "message": error])
             return
         }
         guard let isVisible = call.getBool("isVisible") else {
             let error: String = "Must provide isVisible"
-            print(error);
-            call.resolve(["result": false, "method": "setVisibilityBackgroundForPiP", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "setVisibilityBackgroundForPiP", "message": error])
             return
         }
         implementation.setVisibilityBackgroundForPiP(call: call, playerId: playerId, isVisible: isVisible)
@@ -221,8 +220,8 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func mute(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "mute", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "mute", "message": error])
             return
         }
         implementation.mute(call: call, playerId: playerId)
@@ -231,8 +230,8 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func getVolume(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "getVolume", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "getVolume", "message": error])
             return
         }
         implementation.getVolume(call: call, playerId: playerId)
@@ -241,14 +240,14 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func setVolume(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "setVolume", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "setVolume", "message": error])
             return
         }
         guard let volume = call.getFloat("volume") else {
             let error: String = "Must provide a volume"
-            print(error);
-            call.resolve(["result": false, "method": "setVolume", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "setVolume", "message": error])
             return
         }
         implementation.setVolume(call: call, playerId: playerId, volume: volume)
@@ -257,8 +256,8 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func getRate(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "getRate", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "getRate", "message": error])
             return
         }
         implementation.getRate(call: call, playerId: playerId)
@@ -267,14 +266,14 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func setRate(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "setRate", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "setRate", "message": error])
             return
         }
         guard let rate = call.getFloat("rate") else {
             let error: String = "Must provide a rate"
-            print(error);
-            call.resolve(["result": false, "method": "setRate", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "setRate", "message": error])
             return
         }
         implementation.setRate(call: call, playerId: playerId, rate: rate)
@@ -283,8 +282,8 @@ public class MediaPlayerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func remove(_ call: CAPPluginCall) {
         guard let playerId = call.getString("playerId") else {
             let error: String = "Must provide a playerId"
-            print(error);
-            call.resolve(["result": false, "method": "remove", "message": error]);
+            print(error)
+            call.resolve(["result": false, "method": "remove", "message": error])
             return
         }
         implementation.remove(call: call, playerId: playerId)

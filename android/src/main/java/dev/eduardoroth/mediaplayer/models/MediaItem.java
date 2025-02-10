@@ -2,12 +2,10 @@ package dev.eduardoroth.mediaplayer.models;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-
 import androidx.media3.common.C;
 import androidx.media3.common.MediaItem.SubtitleConfiguration;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.MimeTypes;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -21,15 +19,17 @@ public class MediaItem {
 
     public MediaItem(Uri url, ExtraOptions extra) {
         MediaMetadata.Builder movieMetadataBuilder = new MediaMetadata.Builder()
-                .setTitle(extra.title)
-                .setSubtitle(extra.subtitle)
-                .setArtist(extra.artist)
-                .setMediaType(MediaMetadata.MEDIA_TYPE_VIDEO);
+            .setTitle(extra.title)
+            .setSubtitle(extra.subtitle)
+            .setArtist(extra.artist)
+            .setMediaType(MediaMetadata.MEDIA_TYPE_VIDEO);
         if (extra.poster != null) {
             movieMetadataBuilder.setArtworkUri(Uri.parse(extra.poster));
         }
 
-        androidx.media3.common.MediaItem.Builder mediaItemBuilder = new androidx.media3.common.MediaItem.Builder().setUri(url).setMediaMetadata(movieMetadataBuilder.build());
+        androidx.media3.common.MediaItem.Builder mediaItemBuilder = new androidx.media3.common.MediaItem.Builder()
+            .setUri(url)
+            .setMediaMetadata(movieMetadataBuilder.build());
 
         if (extra.subtitles != null && extra.subtitles.url != null) {
             List<SubtitleConfiguration> subtitlesConfig = new ArrayList<>();
@@ -52,7 +52,15 @@ public class MediaItem {
     private SubtitleConfiguration getSubtitlesFactory(Uri url, String language) {
         String mimeType = getMimeType(url);
         String languageLabel = Locale.forLanguageTag(language).getDisplayLanguage();
-        return new SubtitleConfiguration.Builder(url).setMimeType(mimeType).setUri(url).setId(url.toString()).setLabel(languageLabel).setRoleFlags(C.ROLE_FLAG_CAPTION).setSelectionFlags(C.SELECTION_FLAG_DEFAULT).setLanguage(language).build();
+        return new SubtitleConfiguration.Builder(url)
+            .setMimeType(mimeType)
+            .setUri(url)
+            .setId(url.toString())
+            .setLabel(languageLabel)
+            .setRoleFlags(C.ROLE_FLAG_CAPTION)
+            .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+            .setLanguage(language)
+            .build();
     }
 
     private String getMimeType(Uri subtitlesUrl) {

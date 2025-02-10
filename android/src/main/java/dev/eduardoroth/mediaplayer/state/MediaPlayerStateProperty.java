@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 public class MediaPlayerStateProperty<T> {
+
     private final MutableLiveData<T> _property;
     private final LifecycleOwner _owner;
     private final boolean _setOnce;
@@ -49,10 +50,7 @@ public class MediaPlayerStateProperty<T> {
         }
     }
 
-    public void observe(
-            @NonNull Observer<? super T> observer
-    ) {
+    public void observe(@NonNull Observer<? super T> observer) {
         _property.observe(_owner, observer);
     }
-
 }

@@ -1,11 +1,9 @@
 package dev.eduardoroth.mediaplayer.state;
 
 import android.graphics.Rect;
-
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModel;
 import androidx.media3.session.MediaController;
-
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.PlacementOptions;
@@ -16,7 +14,7 @@ public class MediaPlayerState extends ViewModel {
         WILL_ENTER,
         ACTIVE,
         WILL_EXIT,
-        INACTIVE,
+        INACTIVE
     }
 
     public final MediaPlayerStateProperty<Boolean> canCast;
@@ -58,6 +56,4 @@ public class MediaPlayerState extends ViewModel {
         androidOptions = new MediaPlayerStateProperty<>(owner, null, true);
         extraOptions = new MediaPlayerStateProperty<>(owner, null, true);
     }
-
 }
-

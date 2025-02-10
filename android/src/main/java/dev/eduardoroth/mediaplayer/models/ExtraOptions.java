@@ -1,10 +1,10 @@
 package dev.eduardoroth.mediaplayer.models;
 
 import com.getcapacitor.JSObject;
-
 import java.io.Serializable;
 
 public class ExtraOptions implements Serializable {
+
     public String title;
     public String subtitle;
     public String poster;
@@ -16,7 +16,18 @@ public class ExtraOptions implements Serializable {
     public boolean showControls;
     public JSObject headers;
 
-    public ExtraOptions(String title, String subtitle, String poster, String artist, double rate, SubtitleOptions subtitles, boolean autoPlayWhenReady, boolean loopOnEnd, boolean showControls, JSObject headers) {
+    public ExtraOptions(
+        String title,
+        String subtitle,
+        String poster,
+        String artist,
+        double rate,
+        SubtitleOptions subtitles,
+        boolean autoPlayWhenReady,
+        boolean loopOnEnd,
+        boolean showControls,
+        JSObject headers
+    ) {
         this.title = title;
         this.subtitle = subtitle;
         this.poster = poster;

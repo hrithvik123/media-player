@@ -5,8 +5,8 @@ public class MediaPlayerSubtitleSettings: NSObject {
     var foregroundColor: String?
     var backgroundColor: String?
     var fontSize: Float?
-    
-    init(language: String?, foregroundColor: String?, backgroundColor: String?, fontSize: Float?){
+
+    init(language: String?, foregroundColor: String?, backgroundColor: String?, fontSize: Float?) {
         self.language = language
         self.foregroundColor = foregroundColor
         self.backgroundColor = backgroundColor
@@ -17,7 +17,6 @@ public class MediaPlayerSubtitleSettings: NSObject {
 public class MediaPlayerSubtitleOptions: NSObject {
     var url: URL
     var settings: MediaPlayerSubtitleSettings
-    
 
     init(url: URL, language: String?, foregroundColor: String?, backgroundColor: String?, fontSize: Float?) {
         self.url = url

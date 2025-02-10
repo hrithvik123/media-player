@@ -37,7 +37,7 @@ extension MediaPlayerPlugin {
                     print("*** file does not exist at path \n \(fPath) \n***")
                     let info: [String: Any] = ["dismiss": true]
                     /*notifyListeners("jeepCapVideoPlayerExit", data: info,
-                                         retainUntilConsumed: true)*/
+                     retainUntilConsumed: true)*/
                     dict["message"] = "file does not exist"
                     return dict
                 }
@@ -82,9 +82,9 @@ extension MediaPlayerPlugin {
                 ).absoluteString
                 if !isFileExists(filePath: fPath) {
                     print("*** file does not exist at path \n \(fPath) \n***")
-//                    let info: [String: Any] = ["dismiss": true]
+                    //                    let info: [String: Any] = ["dismiss": true]
                     /*notifyListeners("jeepCapVideoPlayerExit", data: info,
-                                         retainUntilConsumed: true)*/
+                     retainUntilConsumed: true)*/
                     dict["message"] = "file does not exist"
                     return dict
                 }
@@ -104,9 +104,9 @@ extension MediaPlayerPlugin {
                 ).absoluteString
                 if !isFileExists(filePath: fPath) {
                     print("*** file does not exist at path \n \(fPath) \n***")
-//                     let info: [String: Any] = ["dismiss": true]
+                    //                     let info: [String: Any] = ["dismiss": true]
                     /*notifyListeners("jeepCapVideoPlayerExit", data: info,
-                                        retainUntilConsumed: true)*/
+                     retainUntilConsumed: true)*/
                     dict["message"] = "file does not exist"
                     return dict
                 }
@@ -115,7 +115,7 @@ extension MediaPlayerPlugin {
                 dict["message"] = "file path not correct"
             }
             return dict
-    }
+        }
         dict["message"] = "filePath not implemented"
         return dict
     }

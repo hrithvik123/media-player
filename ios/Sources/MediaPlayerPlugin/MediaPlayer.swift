@@ -4,14 +4,14 @@ import UIKit
 import AVKit
 
 @objc public class MediaPlayer: NSObject {
-    var bridge:CAPBridgeProtocol?
+    var bridge: CAPBridgeProtocol?
 
     var controllers: [String: MediaPlayerController] = [:]
 
     @objc func setBridge(bridge: CAPBridgeProtocol) {
         self.bridge = bridge
     }
-    
+
     @objc func create(
         call: CAPPluginCall,
         playerId: String,
@@ -32,9 +32,9 @@ import AVKit
             self.bridge?.viewController?.addChild(mediaPlayerController)
             self.bridge?.viewController?.view.addSubview(mediaPlayerController.view)
             mediaPlayerController.didMove(toParent: self.bridge?.viewController)
-            
+
             self.addMediaPlayerController(playerId: playerId, controller: mediaPlayerController)
-            call.resolve(["result": true, "method": "create", "value": playerId]);
+            call.resolve(["result": true, "method": "create", "value": playerId])
         }
     }
 
@@ -68,7 +68,7 @@ import AVKit
         }
         call.resolve(["result": true, "method": "getCurrentTime", "value": CMTimeGetSeconds(controller.player.currentTime())])
     }
-    
+
     @objc func setCurrentTime(call: CAPPluginCall, playerId: String, time: Double) {
         guard let controller = getMediaPlayerController(playerId: playerId) else {
             call.resolve(["result": false, "method": "setCurrentTime", "message": "Player with playerId \(playerId) not found"])
@@ -91,7 +91,7 @@ import AVKit
         }
         call.resolve(["result": true, "method": "isMuted", "value": controller.player.isMuted])
     }
-    @objc func setVisibilityBackgroundForPiP(call: CAPPluginCall, playerId: String, isVisible: Bool){
+    @objc func setVisibilityBackgroundForPiP(call: CAPPluginCall, playerId: String, isVisible: Bool) {
         guard let controller = getMediaPlayerController(playerId: playerId) else {
             call.resolve(["result": false, "method": "setVisibilityBackgroundForPiP", "message": "Player with playerId \(playerId) not found"])
             return
@@ -154,7 +154,7 @@ import AVKit
     }
     @objc func removeAll(call: CAPPluginCall) {
         DispatchQueue.main.sync {
-            for(_, controller) in controllers{
+            for(_, controller) in controllers {
                 controller.releasePlayer()
             }
             removeAllMediaPlayerControllers()

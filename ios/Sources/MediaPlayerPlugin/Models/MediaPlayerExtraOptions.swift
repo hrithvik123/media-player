@@ -23,7 +23,7 @@ public class MediaPlayerExtraOptions: NSObject {
         loopOnEnd: Bool?,
         showControls: Bool?,
         headers: [String: String]?
-    ){
+    ) {
         self.title = title
         self.subtitle = subtitle
         self.poster = poster

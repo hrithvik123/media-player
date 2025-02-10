@@ -5,7 +5,7 @@ extension MediaPlayerController {
     func setNowPlayingImage() {
         if let artwork = self.extra.poster {
             let session = URLSession(configuration: .default)
-            let task = session.dataTask(with: artwork) { (data, response, error) in
+            let task = session.dataTask(with: artwork) { (data, _, error) in
                 guard let imageData = data, error == nil else {
                     print("Error while downloading the image: \(error?.localizedDescription ?? "")")
                     return
@@ -35,10 +35,10 @@ extension MediaPlayerController {
 
         nowPlayingInfo[MPNowPlayingInfoPropertyMediaType] = NSNumber(value: MPNowPlayingInfoMediaType.video.rawValue)
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-        
+
         UIApplication.shared.beginReceivingRemoteControlEvents()
 
-        periodicTimeObserver = self.player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.1, preferredTimescale: CMTimeScale(NSEC_PER_SEC)), queue: nil) { time in
+        periodicTimeObserver = self.player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.1, preferredTimescale: CMTimeScale(NSEC_PER_SEC)), queue: nil) { _ in
             var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [String: Any]()
             if let currentItem = self.player.currentItem,
                currentItem.status == .readyToPlay {
@@ -64,7 +64,7 @@ extension MediaPlayerController {
             }
         }
     }
-    func clearNowPlaying(){
+    func clearNowPlaying() {
         if let token = self.periodicTimeObserver {
             self.player.removeTimeObserver(token)
             self.periodicTimeObserver = nil
