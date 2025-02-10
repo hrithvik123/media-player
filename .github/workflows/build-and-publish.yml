@@ -33,7 +33,7 @@ jobs:
       - run: npm ci
         name: Install dependencies
 
-      - run: npm fmt
+      - run: npm run fmt
         name: eslint and prettier fix
 
       - run: npm run build
