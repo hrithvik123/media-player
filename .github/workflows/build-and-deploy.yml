@@ -1,4 +1,4 @@
-name: Publish media-player to npm
+name: Build and deploy @eduardoroth/media-player
 
 on:
   push:
@@ -7,32 +7,32 @@ on:
       - 'v**'
 
 jobs:
-  publish:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        name: Checkout code
 
       - uses: EndBug/version-check@v2
+        name: Check if there's an update on package version
         id: check
         with:
           diff-search: true
 
-      - if: steps.check.outputs.changed == 'true'
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
+        name: Install NodeJS
         with:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - if: steps.check.outputs.changed == 'true'
-        run: npm ci
+      - run: npm ci && npm run build
+        name: Install dependencies and build project
 
       - if: steps.check.outputs.changed == 'true'
-        run: npm run build
-
-      - if: steps.check.outputs.changed == 'true'
+        name: Deploy project to npm
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
