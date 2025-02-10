@@ -7,7 +7,8 @@ on:
       - 'v**'
 
 jobs:
-  build-and-deploy:
+  build-publish:
+    name: Build and publish media-player
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -23,16 +24,23 @@ jobs:
           diff-search: true
 
       - uses: actions/setup-node@v4
-        name: Install NodeJS
+        name: Setup NodeJS
         with:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
+          cache: npm
 
-      - run: npm ci && npm run build
-        name: Install dependencies and build project
+      - run: npm ci
+        name: Install dependencies
+
+      - run: npm fmt
+        name: eslint and prettier fix
+
+      - run: npm run build
+        name: Build project
 
       - if: steps.check.outputs.changed == 'true'
-        name: Deploy project to npm
+        name: Publish to npm
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
