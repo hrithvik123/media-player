@@ -290,7 +290,8 @@ public class MediaPlayer {
             ret.put("result", true);
             ret.put("value", playerId);
         } catch (Error | Exception err) {
-            // Ignore errors for missing state.
+            ret.put("result", false);
+            ret.put("message", "Player not found. " + err.getMessage());
         }
         call.resolve(ret);
     }
