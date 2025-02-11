@@ -310,7 +310,7 @@ public class MediaPlayer {
             try {
                 MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
                 playerState.mediaController.get().stop();
-            } catch (Error ignored) {
+            } catch (Error | Exception ignored) {
                 // Ignore errors for missing state.
             }
             MediaPlayerNotificationCenter.post(
