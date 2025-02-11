@@ -263,29 +263,25 @@ public class MediaPlayer {
         call.resolve(ret);
     }
 
-       public void remove(PluginCall call, String playerId) {
+    public void remove(PluginCall call, String playerId) {
         JSObject ret = new JSObject();
         ret.put("method", "remove");
         try {
-            // Retrieve and stop the media controller for this player.
             MediaPlayerState state = MediaPlayerStateProvider.getState(playerId);
-            if (state != null && state.mediaController.get() != null) {
-                state.mediaController.get().stop();
-            }
+            state.mediaController.get().stop();
 
-            // Find the fragment associated with this player ID.
+            // Find and remove the fragment.
             Fragment playerFragment = _currentActivity.getSupportFragmentManager().findFragmentByTag(playerId);
             if (playerFragment != null) {
-                // Remove the fragment synchronously.
                 _currentActivity.getSupportFragmentManager()
                     .beginTransaction()
                     .remove(playerFragment)
                     .commitNow();
             }
-        
+    
             // Clear the stored state so that a new creation doesn't reuse the old state.
             MediaPlayerStateProvider.removeState(playerId);
-        
+    
             // Post a notification that the player was removed.
             MediaPlayerNotificationCenter.post(
                 MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED)
@@ -294,11 +290,12 @@ public class MediaPlayer {
             ret.put("result", true);
             ret.put("value", playerId);
         } catch (Error | Exception err) {
-            ret.put("result", false);
-            ret.put("message", "Player not found. " + err.getMessage());
+            // Ignore errors for missing state.
         }
         call.resolve(ret);
     }
+
+
 
 
     public void removeAll(PluginCall call) {
@@ -311,9 +308,7 @@ public class MediaPlayer {
                 .commitNow();
             try {
                 MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
-                if (playerState != null && playerState.mediaController.get() != null) {
-                    playerState.mediaController.get().stop();
-                }
+                playerState.mediaController.get().stop();
             } catch (Error ignored) {
                 // Ignore errors for missing state.
             }
