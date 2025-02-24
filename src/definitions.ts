@@ -19,6 +19,8 @@ export interface MediaPlayerPlugin {
   setRate(options: MediaPlayerSetRateOptions): Promise<MediaPlayerResult<number>>;
   remove(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<string>>;
   removeAll(): Promise<MediaPlayerResult<string[]>>;
+  isFullScreen(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<boolean>>;
+  toggleFullScreen(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<string>>;
 
   addListener(
     event: 'MediaPlayer:Ready',

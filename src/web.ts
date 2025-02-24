@@ -392,4 +392,52 @@ export class MediaPlayerWeb extends WebPlugin implements MediaPlayerPlugin {
       value: playersToRemove,
     };
   }
+
+  async isFullScreen(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<boolean>> {
+    const player = this._players.get(options.playerId);
+    if (player) {
+      const isFullscreen = player.$state.fullscreen();
+      return {
+        method: 'isFullScreen',
+        result: true,
+        value: isFullscreen,
+      };
+    }
+    return {
+      method: 'isFullScreen',
+      result: false,
+      message: 'Player not found',
+    };
+  }
+
+  async toggleFullScreen(options: MediaPlayerIdOptions): Promise<MediaPlayerResult<string>> {
+    const player = this._players.get(options.playerId);
+    if (player) {
+      try {
+        // Check the current fullscreen state via VidStack’s media store.
+        if (player.$state.fullscreen()) {
+          await player.exitFullscreen();
+        } else {
+          await player.enterFullscreen();
+        }
+        return {
+          method: 'toggleFullScreen',
+          result: true,
+          value: options.playerId,
+        };
+      } catch (err: any) {
+        return {
+          method: 'toggleFullScreen',
+          result: false,
+          error: err,
+          message: err.message,
+        };
+      }
+    }
+    return {
+      method: 'toggleFullScreen',
+      result: false,
+      message: 'Player not found',
+    };
+  }
 }

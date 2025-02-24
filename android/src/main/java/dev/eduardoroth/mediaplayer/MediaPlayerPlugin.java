@@ -400,4 +400,32 @@ public class MediaPlayerPlugin extends Plugin {
     public void removeAll(final PluginCall call) {
         bridge.getActivity().runOnUiThread(() -> implementation.removeAll(call));
     }
+
+    @PluginMethod
+    public void isFullScreen(final PluginCall call) {
+        String playerId = call.getString("playerId");
+        if (playerId == null) {
+            JSObject ret = new JSObject();
+            ret.put("method", "isFullScreen");
+            ret.put("result", false);
+            ret.put("message", "Must provide a PlayerId");
+            call.resolve(ret);
+            return;
+        }
+        bridge.getActivity().runOnUiThread(() -> implementation.isFullScreen(call, playerId));
+    }
+
+    @PluginMethod
+    public void toggleFullScreen(final PluginCall call) {
+        String playerId = call.getString("playerId");
+        if (playerId == null) {
+            JSObject ret = new JSObject();
+            ret.put("method", "toggleFullScreen");
+            ret.put("result", false);
+            ret.put("message", "Must provide a PlayerId");
+            call.resolve(ret);
+            return;
+        }
+        bridge.getActivity().runOnUiThread(() -> implementation.toggleFullScreen(call, playerId));
+    }
 }

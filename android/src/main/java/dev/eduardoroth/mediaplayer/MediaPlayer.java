@@ -351,4 +351,37 @@ public class MediaPlayer {
         }
         return path;
     }
+
+    public void isFullScreen(PluginCall call, String playerId) {
+        JSObject ret = new JSObject();
+        ret.put("method", "isFullScreen");
+        try {
+            MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
+            boolean isFullScreen = playerState.fullscreenState.get() == MediaPlayerState.UI_STATE.ACTIVE;
+            ret.put("result", true);
+            ret.put("value", isFullScreen);
+        } catch (Error | Exception err) {
+            ret.put("result", false);
+            ret.put("message", "Player not found. " + err.getMessage());
+        }
+        call.resolve(ret);
+    }
+
+    public void toggleFullScreen(PluginCall call, String playerId) {
+        JSObject ret = new JSObject();
+        ret.put("method", "toggleFullScreen");
+        try {
+            MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
+            switch (playerState.fullscreenState.get()) {
+                case ACTIVE -> playerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_EXIT);
+                case INACTIVE -> playerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_ENTER);
+            }
+            ret.put("result", true);
+            ret.put("value", true);
+        } catch (Error | Exception err) {
+            ret.put("result", false);
+            ret.put("message", "Player not found. " + err.getMessage());
+        }
+        call.resolve(ret);
+    }
 }
