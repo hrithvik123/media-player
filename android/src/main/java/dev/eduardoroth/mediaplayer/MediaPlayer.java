@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.media3.common.C;
 import androidx.media3.common.util.UnstableApi;
@@ -79,7 +80,7 @@ public class MediaPlayer {
                     call.resolve(ret);
                 }
             },
-            _currentActivity.getMainExecutor()
+            ContextCompat.getMainExecutor(_currentActivity)
         );
     }
 
