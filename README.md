@@ -59,6 +59,8 @@ This will make sure the app doesn't break when doing any of the following action
 * [`setRate(...)`](#setrate)
 * [`remove(...)`](#remove)
 * [`removeAll()`](#removeall)
+* [`isFullScreen(...)`](#isfullscreen)
+* [`toggleFullScreen(...)`](#togglefullscreen)
 * [`addListener('MediaPlayer:Ready', ...)`](#addlistenermediaplayerready-)
 * [`addListener('MediaPlayer:Play', ...)`](#addlistenermediaplayerplay-)
 * [`addListener('MediaPlayer:Pause', ...)`](#addlistenermediaplayerpause-)
@@ -310,6 +312,36 @@ removeAll() => Promise<MediaPlayerResult<string[]>>
 ```
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;string[]&gt;&gt;</code>
+
+--------------------
+
+
+### isFullScreen(...)
+
+```typescript
+isFullScreen(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<boolean>>
+```
+
+| Param         | Type                                                                  |
+| ------------- | --------------------------------------------------------------------- |
+| **`options`** | <code><a href="#mediaplayeridoptions">MediaPlayerIdOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;boolean&gt;&gt;</code>
+
+--------------------
+
+
+### toggleFullScreen(...)
+
+```typescript
+toggleFullScreen(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<string>>
+```
+
+| Param         | Type                                                                  |
+| ------------- | --------------------------------------------------------------------- |
+| **`options`** | <code><a href="#mediaplayeridoptions">MediaPlayerIdOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;string&gt;&gt;</code>
 
 --------------------
 
