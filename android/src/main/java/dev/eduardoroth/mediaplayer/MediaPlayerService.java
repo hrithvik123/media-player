@@ -18,6 +18,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ServiceLifecycleDispatcher;
 import androidx.media3.common.AudioAttributes;
+import androidx.media3.common.C;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.DefaultLoadControl;
@@ -35,6 +36,15 @@ import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
 import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
+import android.util.Log;
+import androidx.media3.common.Format;
+import androidx.media3.common.MimeTypes;
+import androidx.media3.common.PlaybackException;
+import androidx.media3.common.Tracks;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.json.JSONObject;
 
 public class MediaPlayerService extends MediaSessionService implements LifecycleOwner {
 
@@ -124,6 +134,13 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
             .setSeekForwardIncrementMs(VIDEO_STEP)
             .setVideoScalingMode(VIDEO_SCALING_MODE_SCALE_TO_FIT)
             .build();
+
+        DefaultTrackSelector.Parameters.Builder parametersBuilder = new DefaultTrackSelector.Parameters.Builder(this);
+        if (extra.subtitles != null) {
+            parametersBuilder.setPreferredTextLanguage(extra.subtitles.settings.language);
+            parametersBuilder.setPreferredTextRoleFlags(C.ROLE_FLAG_CAPTION);
+        }
+        ((DefaultTrackSelector) exoPlayer.getTrackSelector()).setParameters(parametersBuilder.build());
 
         exoPlayer.setAudioAttributes(
             new AudioAttributes.Builder()
@@ -220,6 +237,20 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
                                 exoPlayer.play();
                             }
                             break;
+                    }
+                }
+
+                @Override
+                public void onTracksChanged(@NonNull Tracks tracks) {
+                    Player.Listener.super.onTracksChanged(tracks);
+                }
+
+                @Override
+                public void onPlayerError(@NonNull PlaybackException error) {
+                    Player.Listener.super.onPlayerError(error);
+                    Log.e("MediaPlayer", "Player error: " + error.getMessage());
+                    if (error.getCause() != null) {
+                        Log.e("MediaPlayer", "Error cause: " + error.getCause().getMessage());
                     }
                 }
             }

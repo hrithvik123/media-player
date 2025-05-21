@@ -2,6 +2,8 @@ package dev.eduardoroth.mediaplayer.models;
 
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.util.Log;
+
 import androidx.media3.common.C;
 import androidx.media3.common.MediaItem.SubtitleConfiguration;
 import androidx.media3.common.MediaMetadata;
@@ -33,7 +35,7 @@ public class MediaItem {
 
         if (extra.subtitles != null && extra.subtitles.url != null) {
             List<SubtitleConfiguration> subtitlesConfig = new ArrayList<>();
-            subtitlesConfig.add(getSubtitlesFactory(url, extra.subtitles.settings.language));
+            subtitlesConfig.add(getSubtitlesFactory(Uri.parse(extra.subtitles.url), extra.subtitles.settings.language));
             mediaItemBuilder.setSubtitleConfigurations(subtitlesConfig);
             _hasSubtitles = true;
         }
@@ -52,7 +54,7 @@ public class MediaItem {
     private SubtitleConfiguration getSubtitlesFactory(Uri url, String language) {
         String mimeType = getMimeType(url);
         String languageLabel = Locale.forLanguageTag(language).getDisplayLanguage();
-        return new SubtitleConfiguration.Builder(url)
+        SubtitleConfiguration subtitleConfiguration = new SubtitleConfiguration.Builder(url)
             .setMimeType(mimeType)
             .setUri(url)
             .setId(url.toString())
@@ -61,19 +63,24 @@ public class MediaItem {
             .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
             .setLanguage(language)
             .build();
+        Log.d("MediaPlayer", "subtitleConfiguration: " + subtitleConfiguration);
+        return subtitleConfiguration;
     }
 
     private String getMimeType(Uri subtitlesUrl) {
         String lastSegment = subtitlesUrl.getLastPathSegment();
+        
         if (lastSegment != null) {
             String extension = lastSegment.substring(lastSegment.lastIndexOf(".") + 1);
-            return switch (extension) {
-                case "vtt" -> MimeTypes.TEXT_VTT;
+            
+            String mimeType = switch (extension) {
+                case "vtt", "webvtt" -> MimeTypes.TEXT_VTT;
                 case "srt" -> MimeTypes.APPLICATION_SUBRIP;
                 case "ssa", "ass" -> MimeTypes.TEXT_SSA;
                 case "ttml", "dfxp", "xml" -> MimeTypes.APPLICATION_TTML;
                 default -> "";
             };
+            return mimeType;
         }
         return "";
     }
