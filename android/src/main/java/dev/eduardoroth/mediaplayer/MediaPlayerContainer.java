@@ -212,6 +212,7 @@ public class MediaPlayerContainer extends Fragment {
         }
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -223,8 +224,9 @@ public class MediaPlayerContainer extends Fragment {
         updateEmbeddedLayout();
 
         _embeddedPlayerView = createPlayerView(inflater, _embeddedView);
+        _embeddedPlayerView.setShowSubtitleButton(true);
         _fullscreenPlayerView = createPlayerView(inflater, _fullscreenView);
-
+        _fullscreenPlayerView.setShowSubtitleButton(true);
         return containerView;
     }
 
