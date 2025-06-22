@@ -1,2 +1,4 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
+gradle.ext.androidxMediaModulePrefix = 'media3-'
+apply from: file("./media/core_settings.gradle")

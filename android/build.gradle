@@ -73,5 +73,6 @@ dependencies {
     implementation "androidx.media3:media3-session:1.5.1"
     implementation "androidx.media3:media3-exoplayer-smoothstreaming:1.5.1"
     implementation "androidx.media3:media3-cast:1.5.1"
+    implementation project(':media3-lib-decoder-ffmpeg')
 
 }
