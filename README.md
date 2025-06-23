@@ -17,6 +17,10 @@ npm install @eduardoroth/media-player
 npx cap sync
 ```
 
+## FFMPEG extension
+
+The plugin uses a pre-built ffmpeg extension available in this [repo](https://github.com/ag2s20150909/media3libs/blob/1.5.1/repo/androidx/media3/media3-decode-ffmpeg/1.5.1/media3-decode-ffmpeg-1.5.1.aar). The extension aar file is accessible under libs folder.
+
 ## Android
 
 **Required** Gradle v7+
@@ -43,37 +47,37 @@ This will make sure the app doesn't break when doing any of the following action
 
 <docgen-index>
 
-* [`create(...)`](#create)
-* [`play(...)`](#play)
-* [`pause(...)`](#pause)
-* [`getDuration(...)`](#getduration)
-* [`getCurrentTime(...)`](#getcurrenttime)
-* [`setCurrentTime(...)`](#setcurrenttime)
-* [`isPlaying(...)`](#isplaying)
-* [`isMuted(...)`](#ismuted)
-* [`setVisibilityBackgroundForPiP(...)`](#setvisibilitybackgroundforpip)
-* [`mute(...)`](#mute)
-* [`getVolume(...)`](#getvolume)
-* [`setVolume(...)`](#setvolume)
-* [`getRate(...)`](#getrate)
-* [`setRate(...)`](#setrate)
-* [`remove(...)`](#remove)
-* [`removeAll()`](#removeall)
-* [`isFullScreen(...)`](#isfullscreen)
-* [`toggleFullScreen(...)`](#togglefullscreen)
-* [`addListener('MediaPlayer:Ready', ...)`](#addlistenermediaplayerready-)
-* [`addListener('MediaPlayer:Play', ...)`](#addlistenermediaplayerplay-)
-* [`addListener('MediaPlayer:Pause', ...)`](#addlistenermediaplayerpause-)
-* [`addListener('MediaPlayer:Ended', ...)`](#addlistenermediaplayerended-)
-* [`addListener('MediaPlayer:Removed', ...)`](#addlistenermediaplayerremoved-)
-* [`addListener('MediaPlayer:Seek', ...)`](#addlistenermediaplayerseek-)
-* [`addListener('MediaPlayer:TimeUpdated', ...)`](#addlistenermediaplayertimeupdated-)
-* [`addListener('MediaPlayer:FullScreen', ...)`](#addlistenermediaplayerfullscreen-)
-* [`addListener('MediaPlayer:PictureInPicture', ...)`](#addlistenermediaplayerpictureinpicture-)
-* [`addListener('MediaPlayer:isPlayingInBackground', ...)`](#addlistenermediaplayerisplayinginbackground-)
-* [`removeAllListeners(...)`](#removealllisteners)
-* [Interfaces](#interfaces)
-* [Type Aliases](#type-aliases)
+- [`create(...)`](#create)
+- [`play(...)`](#play)
+- [`pause(...)`](#pause)
+- [`getDuration(...)`](#getduration)
+- [`getCurrentTime(...)`](#getcurrenttime)
+- [`setCurrentTime(...)`](#setcurrenttime)
+- [`isPlaying(...)`](#isplaying)
+- [`isMuted(...)`](#ismuted)
+- [`setVisibilityBackgroundForPiP(...)`](#setvisibilitybackgroundforpip)
+- [`mute(...)`](#mute)
+- [`getVolume(...)`](#getvolume)
+- [`setVolume(...)`](#setvolume)
+- [`getRate(...)`](#getrate)
+- [`setRate(...)`](#setrate)
+- [`remove(...)`](#remove)
+- [`removeAll()`](#removeall)
+- [`isFullScreen(...)`](#isfullscreen)
+- [`toggleFullScreen(...)`](#togglefullscreen)
+- [`addListener('MediaPlayer:Ready', ...)`](#addlistenermediaplayerready-)
+- [`addListener('MediaPlayer:Play', ...)`](#addlistenermediaplayerplay-)
+- [`addListener('MediaPlayer:Pause', ...)`](#addlistenermediaplayerpause-)
+- [`addListener('MediaPlayer:Ended', ...)`](#addlistenermediaplayerended-)
+- [`addListener('MediaPlayer:Removed', ...)`](#addlistenermediaplayerremoved-)
+- [`addListener('MediaPlayer:Seek', ...)`](#addlistenermediaplayerseek-)
+- [`addListener('MediaPlayer:TimeUpdated', ...)`](#addlistenermediaplayertimeupdated-)
+- [`addListener('MediaPlayer:FullScreen', ...)`](#addlistenermediaplayerfullscreen-)
+- [`addListener('MediaPlayer:PictureInPicture', ...)`](#addlistenermediaplayerpictureinpicture-)
+- [`addListener('MediaPlayer:isPlayingInBackground', ...)`](#addlistenermediaplayerisplayinginbackground-)
+- [`removeAllListeners(...)`](#removealllisteners)
+- [Interfaces](#interfaces)
+- [Type Aliases](#type-aliases)
 
 </docgen-index>
 
@@ -92,8 +96,7 @@ create(options: MediaPlayerOptions) => Promise<MediaPlayerResult<string>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;string&gt;&gt;</code>
 
---------------------
-
+---
 
 ### play(...)
 
@@ -107,8 +110,7 @@ play(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<string>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;string&gt;&gt;</code>
 
---------------------
-
+---
 
 ### pause(...)
 
@@ -122,8 +124,7 @@ pause(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<string>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;string&gt;&gt;</code>
 
---------------------
-
+---
 
 ### getDuration(...)
 
@@ -137,8 +138,7 @@ getDuration(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<number>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;number&gt;&gt;</code>
 
---------------------
-
+---
 
 ### getCurrentTime(...)
 
@@ -152,8 +152,7 @@ getCurrentTime(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<numbe
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;number&gt;&gt;</code>
 
---------------------
-
+---
 
 ### setCurrentTime(...)
 
@@ -167,8 +166,7 @@ setCurrentTime(options: MediaPlayerSetCurrentTimeOptions) => Promise<MediaPlayer
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;number&gt;&gt;</code>
 
---------------------
-
+---
 
 ### isPlaying(...)
 
@@ -182,8 +180,7 @@ isPlaying(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<boolean>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;boolean&gt;&gt;</code>
 
---------------------
-
+---
 
 ### isMuted(...)
 
@@ -197,8 +194,7 @@ isMuted(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<boolean>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;boolean&gt;&gt;</code>
 
---------------------
-
+---
 
 ### setVisibilityBackgroundForPiP(...)
 
@@ -212,8 +208,7 @@ setVisibilityBackgroundForPiP(options: MediaPlayerSetVisibilityBackgroundForPiPO
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;boolean&gt;&gt;</code>
 
---------------------
-
+---
 
 ### mute(...)
 
@@ -227,8 +222,7 @@ mute(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<boolean>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;boolean&gt;&gt;</code>
 
---------------------
-
+---
 
 ### getVolume(...)
 
@@ -242,8 +236,7 @@ getVolume(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<number>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;number&gt;&gt;</code>
 
---------------------
-
+---
 
 ### setVolume(...)
 
@@ -257,8 +250,7 @@ setVolume(options: MediaPlayerSetVolumeOptions) => Promise<MediaPlayerResult<num
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;number&gt;&gt;</code>
 
---------------------
-
+---
 
 ### getRate(...)
 
@@ -272,8 +264,7 @@ getRate(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<number>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;number&gt;&gt;</code>
 
---------------------
-
+---
 
 ### setRate(...)
 
@@ -287,8 +278,7 @@ setRate(options: MediaPlayerSetRateOptions) => Promise<MediaPlayerResult<number>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;number&gt;&gt;</code>
 
---------------------
-
+---
 
 ### remove(...)
 
@@ -302,8 +292,7 @@ remove(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<string>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;string&gt;&gt;</code>
 
---------------------
-
+---
 
 ### removeAll()
 
@@ -313,8 +302,7 @@ removeAll() => Promise<MediaPlayerResult<string[]>>
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;string[]&gt;&gt;</code>
 
---------------------
-
+---
 
 ### isFullScreen(...)
 
@@ -328,8 +316,7 @@ isFullScreen(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<boolean
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;boolean&gt;&gt;</code>
 
---------------------
-
+---
 
 ### toggleFullScreen(...)
 
@@ -343,8 +330,7 @@ toggleFullScreen(options: MediaPlayerIdOptions) => Promise<MediaPlayerResult<str
 
 **Returns:** <code>Promise&lt;<a href="#mediaplayerresult">MediaPlayerResult</a>&lt;string&gt;&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:Ready', ...)
 
@@ -359,8 +345,7 @@ addListener(event: 'MediaPlayer:Ready', listener: (event: { playerId: string; })
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:Play', ...)
 
@@ -375,8 +360,7 @@ addListener(event: 'MediaPlayer:Play', listener: (event: { playerId: string; }) 
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:Pause', ...)
 
@@ -391,8 +375,7 @@ addListener(event: 'MediaPlayer:Pause', listener: (event: { playerId: string; })
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:Ended', ...)
 
@@ -407,8 +390,7 @@ addListener(event: 'MediaPlayer:Ended', listener: (event: { playerId: string; })
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:Removed', ...)
 
@@ -423,8 +405,7 @@ addListener(event: 'MediaPlayer:Removed', listener: (event: { playerId: string; 
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:Seek', ...)
 
@@ -439,8 +420,7 @@ addListener(event: 'MediaPlayer:Seek', listener: (event: { playerId: string; pre
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:TimeUpdated', ...)
 
@@ -455,8 +435,7 @@ addListener(event: 'MediaPlayer:TimeUpdated', listener: (event: { playerId: stri
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:FullScreen', ...)
 
@@ -471,8 +450,7 @@ addListener(event: 'MediaPlayer:FullScreen', listener: (event: { playerId: strin
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:PictureInPicture', ...)
 
@@ -487,8 +465,7 @@ addListener(event: 'MediaPlayer:PictureInPicture', listener: (event: { playerId:
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### addListener('MediaPlayer:isPlayingInBackground', ...)
 
@@ -503,8 +480,7 @@ addListener(event: 'MediaPlayer:isPlayingInBackground', listener: (event: { play
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
---------------------
-
+---
 
 ### removeAllListeners(...)
 
@@ -516,11 +492,9 @@ removeAllListeners(options: MediaPlayerIdOptions) => Promise<void>
 | ------------- | --------------------------------------------------------------------- |
 | **`options`** | <code><a href="#mediaplayeridoptions">MediaPlayerIdOptions</a></code> |
 
---------------------
-
+---
 
 ### Interfaces
-
 
 #### Error
 
@@ -530,76 +504,61 @@ removeAllListeners(options: MediaPlayerIdOptions) => Promise<void>
 | **`message`** | <code>string</code> |
 | **`stack`**   | <code>string</code> |
 
-
 #### PluginListenerHandle
 
 | Prop         | Type                                      |
 | ------------ | ----------------------------------------- |
 | **`remove`** | <code>() =&gt; Promise&lt;void&gt;</code> |
 
-
 ### Type Aliases
-
 
 #### MediaPlayerResult
 
 <code>{ method: string; result: boolean; value?: ResultValueType; error?: <a href="#error">Error</a>; message?: string; }</code>
 
-
 #### MediaPlayerOptions
 
 <code>{ playerId: string; url: string; placement?: <a href="#mediaplayerplacementoptions">MediaPlayerPlacementOptions</a>; ios?: <a href="#mediaplayeriosoptions">MediaPlayerIosOptions</a>; android?: <a href="#mediaplayerandroidoptions">MediaPlayerAndroidOptions</a>; web?: <a href="#mediaplayerweboptions">MediaPlayerWebOptions</a>; extra?: <a href="#mediaplayerextraoptions">MediaPlayerExtraOptions</a>; }</code>
-
 
 #### MediaPlayerPlacementOptions
 
 <code>{ videoOrientation?: 'VERTICAL' | 'HORIZONTAL'; horizontalMargin?: number; horizontalAlignment?: 'START' | 'CENTER' | 'END'; verticalMargin?: number; verticalAlignment?: 'TOP' | 'CENTER' | 'BOTTOM'; height?: number; width?: number; }</code>
 
-
 #### MediaPlayerIosOptions
 
 <code>{ enableExternalPlayback?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; automaticallyHideBackgroundForPip?: boolean; fullscreenOnLandscape?: boolean; allowsVideoFrameAnalysis?: boolean; }</code>
-
 
 #### MediaPlayerAndroidOptions
 
 <code>{ enableChromecast?: boolean; enablePiP?: boolean; enableBackgroundPlay?: boolean; openInFullscreen?: boolean; automaticallyEnterPiP?: boolean; fullscreenOnLandscape?: boolean; stopOnTaskRemoved?: boolean; }</code>
 
-
 #### MediaPlayerWebOptions
 
 <code>{ enableChromecast?: boolean; }</code>
-
 
 #### MediaPlayerExtraOptions
 
 <code>{ title?: string; subtitle?: string; poster?: string; artist?: string; rate?: number; subtitles?: <a href="#mediaplayersubtitleoptions">MediaPlayerSubtitleOptions</a>; autoPlayWhenReady?: boolean; loopOnEnd?: boolean; showControls?: boolean; headers?: { [key: string]: string; }; }</code>
 
-
 #### MediaPlayerSubtitleOptions
 
 <code>{ url: string; options?: { language?: string; foregroundColor?: string; backgroundColor?: string; fontSize?: number; }; }</code>
-
 
 #### MediaPlayerIdOptions
 
 <code>{ playerId: string; }</code>
 
-
 #### MediaPlayerSetCurrentTimeOptions
 
 <code>{ playerId: string; time: number; }</code>
-
 
 #### MediaPlayerSetVisibilityBackgroundForPiPOptions
 
 <code>{ playerId: string; isVisible: boolean; }</code>
 
-
 #### MediaPlayerSetVolumeOptions
 
 <code>{ playerId: string; volume: number; }</code>
-
 
 #### MediaPlayerSetRateOptions
 
