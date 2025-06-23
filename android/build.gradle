@@ -52,7 +52,6 @@ repositories {
 
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':capacitor-android')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
@@ -74,4 +73,5 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer-smoothstreaming:1.5.1"
     implementation "androidx.media3:media3-cast:1.5.1"
 
+    implementation files('libs/media3-decode-ffmpeg-1.5.1.aar')
 }

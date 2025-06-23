@@ -22,6 +22,7 @@ import androidx.media3.common.C;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.DefaultLoadControl;
+import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.trackselection.AdaptiveTrackSelection;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
@@ -124,7 +125,16 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
 
     @OptIn(markerClass = UnstableApi.class)
     private ExoPlayer createPlayer(String playerId, String videoUrl, AndroidOptions android, ExtraOptions extra) {
+
+        // 1. Create a DefaultRenderersFactory and enable extension renderers
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
+        renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+        // You can also use EXTENSION_RENDERER_MODE_PREFER if you want to prefer platform
+        // renderers when available but still fall back to extensions for unsupported formats.
+        // EXTENSION_RENDERER_MODE_ON gives priority to extension renderers.
+
         ExoPlayer exoPlayer = new ExoPlayer.Builder(this)
+            .setRenderersFactory(renderersFactory)
             .setName(playerId)
             .setTrackSelector(new DefaultTrackSelector(this, new AdaptiveTrackSelection.Factory()))
             .setLoadControl(new DefaultLoadControl())
